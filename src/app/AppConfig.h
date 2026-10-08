@@ -32,6 +32,21 @@ public:
     QString pathsUnitsDir() const;
     QString pathsLogsDir() const;
 
+    bool schoolAvoidMetaSchoolWords() const;
+    bool llmFirstSentenceHint() const;
+    qint64 llmKeepAlive() const;
+    int llmNumCtx() const;
+    int llmNumThread() const;
+    int llmNumBatch() const;
+    int llmRequestTimeoutMs() const;
+    int llmHistoryBudgetTokens() const;
+    int llmHistoryTrimTokens() const;
+    int llmMaxNewTurnTokens() const;
+    double llmTopP() const;
+    int llmTopK() const;
+    double llmRepeatPenalty() const;
+    double llmTemperatureFor(const QString &modeKey) const;
+
     static QJsonObject defaultDocument();
 
 signals:
@@ -40,6 +55,8 @@ signals:
 private:
     void ensureDefaults();
     QString stringAt(const QStringList &path, const QString &fallback = {}) const;
+    int intAt(const QStringList &path, int fallback) const;
+    double doubleAt(const QStringList &path, double fallback) const;
 
     QString m_filePath;
     QJsonObject m_document;

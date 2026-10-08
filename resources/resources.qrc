@@ -3,4 +3,11 @@
         <file>styles/app.qss</file>
         <file>config/eagle_config.defaults.json</file>
     </qresource>
+    <qresource prefix="/prompts">
+        <file alias="tail.txt">prompts/tail.txt</file>
+        <file alias="system_school.txt">prompts/system_school.txt</file>
+        <file alias="unit_card.txt">prompts/unit_card.txt</file>
+        <file alias="unit_card_none.txt">prompts/unit_card_none.txt</file>
+        <file alias="doubt.txt">prompts/doubt.txt</file>
+    </qresource>
 </RCC>

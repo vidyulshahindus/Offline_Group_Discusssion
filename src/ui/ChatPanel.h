@@ -20,6 +20,8 @@ public:
     explicit ChatPanel(QWidget *parent = nullptr);
 
     QComboBox *modelCombo() const { return m_modelCombo; }
+    QComboBox *modeCombo() const { return m_modeCombo; }
+    QComboBox *languageCombo() const { return m_languageCombo; }
     QComboBox *wordLimitCombo() const { return m_wordLimitCombo; }
     QComboBox *micCombo() const { return m_micCombo; }
     QComboBox *speakerCombo() const { return m_speakerCombo; }
@@ -35,15 +37,11 @@ public:
     void clearConversation();
     void scrollToBottom();
     int currentWordLimit() const;
-    QJsonArray conversationForApi() const;
     void appendAssistantStream(const QString &text);
     void setActiveAssistantBubble(ChatBubble *bubble);
     ChatBubble *activeAssistantBubble() const { return m_activeAssistantBubble; }
     QString streamBuffer() const { return m_streamBuffer; }
     void clearStreamBuffer() { m_streamBuffer.clear(); }
-    void commitAssistantToHistory(const QString &fullText);
-    QJsonArray &messages() { return m_messages; }
-
 signals:
     void sendRequested();
     void newChatRequested();
@@ -58,6 +56,8 @@ protected:
 
 private:
     QComboBox *m_modelCombo = nullptr;
+    QComboBox *m_modeCombo = nullptr;
+    QComboBox *m_languageCombo = nullptr;
     QComboBox *m_wordLimitCombo = nullptr;
     QComboBox *m_micCombo = nullptr;
     QComboBox *m_speakerCombo = nullptr;
@@ -73,6 +73,5 @@ private:
     QPushButton *m_refreshMicsButton = nullptr;
 
     ChatBubble *m_activeAssistantBubble = nullptr;
-    QJsonArray m_messages;
     QString m_streamBuffer;
 };

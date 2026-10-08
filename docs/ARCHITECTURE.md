@@ -2,9 +2,10 @@
 
 See `docs/EAGLE_BUILD_SPEC.md` §6 for the target diagram and module list.
 
-## M0 state
+## M1 state
 
-- **Process:** single Qt app `EagleGD`; helpers (Ollama, whisper, Piper, robot bridge) are external.
-- **App layer:** `Application` loads `eagle_config.json`, `Paths`, logging, and `ServiceSupervisor`.
-- **UI:** `MainWindow` orchestrates services; `ChatPanel` holds the prototype chat chrome; `ReadinessPanel` shows health checks at startup.
-- **Next:** M1 introduces `OllamaBackend`, `PromptBuilder`, and `HistoryManager` under `src/llm/`.
+- **LLM:** `src/llm/` — `OllamaBackend`, `PromptBuilder`, `TemplateEngine`, `HistoryManager`, `TokenEstimator`.
+- **Core:** `Metrics` + F12 `MetricsOverlay` (`prompt_eval_count`, cache hint).
+- **Turn shape:** stable `system` (A.1 + unit card), append-only `history`, per-turn user message (Doubt = A.4.1 + tail).
+- **Startup:** probe → `show` (capabilities) → preload (`keep_alive: -1`) → warm-up (system + “Ready.”).
+- **Next:** M2 sentence streaming TTS; M4 unit packs and `Retriever`.

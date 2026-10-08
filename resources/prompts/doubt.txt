@@ -1,0 +1,8 @@
+[DOUBT]
+Question: {{question}}
+{{#if notes}}Notes: {{notes}}
+{{/if}}{{#if misconception}}This question may reflect a misconception: {{misconception}}. Correct it kindly.
+{{/if}}Answer for a {{register_short}} learner.
+Give the direct answer first, then one everyday example or analogy, then one sentence linking it to the concept "{{concept}}".
+If the question is outside this unit, still answer briefly and accurately. If you are unsure, say so honestly.
+{{tail}}

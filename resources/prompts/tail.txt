@@ -1,0 +1,1 @@
+Reply in {{language_instruction}}. Maximum {{word_limit}} words.{{#if first_sentence_hint}} Start with a short first sentence.{{/if}}

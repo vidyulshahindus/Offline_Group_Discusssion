@@ -94,6 +94,7 @@ QString Paths::resolveToolsDir() const
     const QStringList candidates = {
         QDir(appDir).filePath(QStringLiteral("tools")),
         QDir(appDir).filePath(QStringLiteral("../tools")),
+        QDir(appDir).filePath(QStringLiteral("../../tools")),
 #ifdef Q_OS_LINUX
         QStringLiteral("/opt/eagle-gd/tools"),
         QDir(QStandardPaths::writableLocation(QStandardPaths::HomeLocation))

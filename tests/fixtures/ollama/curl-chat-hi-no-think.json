@@ -1,0 +1,1 @@
+{"model":"eagle-clm","messages":[{"role":"user","content":"Hi"}],"stream":true,"options":{"num_ctx":4096}}

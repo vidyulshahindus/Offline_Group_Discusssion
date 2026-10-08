@@ -70,7 +70,15 @@
     { "name": "linux-gcc-debug", "configurePreset": "linux-gcc-debug" }
   ],
   "testPresets": [
-    { "name": "windows-mingw-release", "configurePreset": "windows-mingw-release" },
-    { "name": "linux-gcc-release", "configurePreset": "linux-gcc-release" }
+    {
+      "name": "windows-mingw-release",
+      "configurePreset": "windows-mingw-release",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "linux-gcc-release",
+      "configurePreset": "linux-gcc-release",
+      "output": { "outputOnFailure": true }
+    }
   ]
 }

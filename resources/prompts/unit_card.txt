@@ -1,0 +1,9 @@
+
+UNIT CARD
+Programme: {{programme}} {{subject}}, Grade {{grade}}. Speak with {{register}}.
+Unit: {{unit_title}}. Current topic: {{topic_title}}.
+Concept: {{concept}}. Meaning: {{concept_meaning}}
+Relevance: {{relevance}}
+Wisdom question: {{wisdom_question}}
+IB links: {{ib_links}}
+Key facts for this topic: {{key_facts}}

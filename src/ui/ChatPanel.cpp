@@ -34,6 +34,17 @@ ChatPanel::ChatPanel(QWidget *parent)
     m_modelCombo->setObjectName(QStringLiteral("modelCombo"));
     m_modelCombo->setToolTip(QStringLiteral("Model used for the next reply"));
 
+    m_modeCombo = new QComboBox(header);
+    m_modeCombo->setObjectName(QStringLiteral("modeCombo"));
+    m_modeCombo->addItem(QStringLiteral("Doubt"), QStringLiteral("doubt"));
+    m_modeCombo->setToolTip(QStringLiteral("CLM mode for the next turn"));
+
+    m_languageCombo = new QComboBox(header);
+    m_languageCombo->setObjectName(QStringLiteral("languageCombo"));
+    m_languageCombo->addItem(QStringLiteral("English"), QStringLiteral("en"));
+    m_languageCombo->addItem(QStringLiteral("Hindi"), QStringLiteral("hi"));
+    m_languageCombo->setToolTip(QStringLiteral("Reply language"));
+
     auto *wordLimitLabel = new QLabel(QStringLiteral("Word limit:"), header);
     wordLimitLabel->setObjectName(QStringLiteral("wordLimitLabel"));
 
@@ -60,6 +71,8 @@ ChatPanel::ChatPanel(QWidget *parent)
     headerLayout->addWidget(title);
     headerLayout->addSpacing(8);
     headerLayout->addWidget(m_modelCombo);
+    headerLayout->addWidget(m_modeCombo);
+    headerLayout->addWidget(m_languageCombo);
     headerLayout->addWidget(wordLimitLabel);
     headerLayout->addWidget(m_wordLimitCombo);
     headerLayout->addStretch(1);
@@ -175,7 +188,6 @@ ChatBubble *ChatPanel::addMessageBubble(ChatRole role, const QString &text)
 
 void ChatPanel::clearConversation()
 {
-    m_messages = QJsonArray();
     m_activeAssistantBubble = nullptr;
     m_streamBuffer.clear();
 
@@ -195,26 +207,6 @@ int ChatPanel::currentWordLimit() const
     return ok ? limit : 75;
 }
 
-QJsonArray ChatPanel::conversationForApi() const
-{
-    QJsonArray messages;
-
-    QJsonObject systemMessage;
-    systemMessage.insert(QStringLiteral("role"), QStringLiteral("system"));
-    systemMessage.insert(
-        QStringLiteral("content"),
-        QStringLiteral("Keep every reply within %1 words. Answer directly from your own knowledge. "
-                       "Do not call tools, do not search the web, and do not output tool_code, XML, "
-                       "or code. If you are unsure, say so in one sentence.")
-            .arg(currentWordLimit()));
-    messages.append(systemMessage);
-
-    for (const QJsonValue &value : m_messages) {
-        messages.append(value);
-    }
-    return messages;
-}
-
 void ChatPanel::appendAssistantStream(const QString &text)
 {
     m_streamBuffer.append(text);
@@ -227,15 +219,4 @@ void ChatPanel::appendAssistantStream(const QString &text)
 void ChatPanel::setActiveAssistantBubble(ChatBubble *bubble)
 {
     m_activeAssistantBubble = bubble;
-}
-
-void ChatPanel::commitAssistantToHistory(const QString &fullText)
-{
-    if (fullText.isEmpty()) {
-        return;
-    }
-    QJsonObject assistantMessage;
-    assistantMessage.insert(QStringLiteral("role"), QStringLiteral("assistant"));
-    assistantMessage.insert(QStringLiteral("content"), fullText);
-    m_messages.append(assistantMessage);
 }

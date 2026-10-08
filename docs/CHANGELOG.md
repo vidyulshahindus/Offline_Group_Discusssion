@@ -1,5 +1,22 @@
 # Changelog
 
+## M1 — LLM core (2026-10-08)
+
+### M1 bugfix — Doubt chat stuck on "…"
+
+- Serial startup (`runStartupSequence`): show → preload → warm-up on one aux connection; warm-up uses `stream: false`.
+- `isBusy()` blocks user turns while aux or stream is active; `think: false` from `/api/show`, name heuristic, or per-model memory after a thinking-only stream.
+- On thinking-only NDJSON (non-empty `message.thinking`, empty `content`), abort once and retry with `think: false`; remember model.
+- Stream parser: ignore `message.thinking` for UI; fail clearly on `done` with empty content; log full `/api/chat` bodies under `eagle.ollama`.
+- Manual Ollama curl fixtures: `tests/fixtures/ollama/`; regression `tst_ollamabackend` (mock HTTP NDJSON server).
+
+- Added `OllamaBackend` (`/api/show`, capabilities, `think:false` for thinking models, `keep_alive`, load options, metrics, preload, warm-up, streaming, timeouts, fallback model).
+- Added `PromptBuilder` + `TemplateEngine` with Appendix A.1, A.2, A.4.1 and `tail.txt` (resources + data-dir overrides).
+- Added `HistoryManager`, `TokenEstimator`, `Metrics`, and F12 **Metrics overlay** (`prompt_eval_count` vs estimated new tokens).
+- Wired **Doubt** mode end-to-end (typed chat): stable system prompt, byte-identical history replay, English/Hindi reply language.
+- Replaced prototype `OllamaClient`; unit tests `tst_promptbuilder`, `tst_historymanager`.
+- **Paths:** added `<appDir>/../../tools` for dev builds from `build/mingw-release/`.
+
 ## M0 — Foundation (2026-10-08)
 
 - Renamed the CMake target from `OllamaChat` to **EagleGD**; added `CMakePresets.json`.

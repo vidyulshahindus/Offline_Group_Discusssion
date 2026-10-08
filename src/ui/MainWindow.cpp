@@ -1,38 +1,48 @@
+#include "MainWindow.h"
+
+#include "AppConfig.h"
+#include "HistoryManager.h"
+#include "LlmServices.h"
+#include "Metrics.h"
+#include "OllamaBackend.h"
+#include "Paths.h"
+#include "PromptBuilder.h"
+#include "PromptTypes.h"
+#include "ServiceSupervisor.h"
+#include "TokenEstimator.h"
+#include "ChatPanel.h"
+#include "MetricsOverlay.h"
+#include "ReadinessPanel.h"
+#include "chatbubble.h"
+#include "piperspeaker.h"
+#include "speechinput.h"
+
+#include <QAction>
+#include <QAudioDevice>
 #include <QComboBox>
+#include <QElapsedTimer>
+#include <QKeySequence>
 #include <QLabel>
+#include <QMenuBar>
 #include <QPushButton>
 #include <QStyle>
 #include <QTextCursor>
 #include <QTextEdit>
 
-#include "MainWindow.h"
-
-#include "AppConfig.h"
-#include "Paths.h"
-#include "ServiceSupervisor.h"
-#include "ChatPanel.h"
-#include "ollamaclient.h"
-#include "piperspeaker.h"
-#include "ReadinessPanel.h"
-#include "speechinput.h"
-
-#include <QAction>
-#include <QAudioDevice>
-#include <QJsonObject>
-#include <QMenuBar>
-#include <QStyle>
-#include <QTextCursor>
-
 MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSupervisor &supervisor,
-                       QWidget *parent)
+                       LlmServices &llm, QWidget *parent)
     : QMainWindow(parent)
     , m_config(config)
     , m_supervisor(supervisor)
+    , m_llm(llm)
 {
-    m_client = new OllamaClient(this);
     m_speech = new SpeechInput(this);
     m_piper = new PiperSpeaker(this);
     wirePaths(paths);
+
+    m_unitContext.hasUnit = false;
+    m_unitContext.registerShort = QStringLiteral("Grade 9 MYP");
+    m_unitContext.concept = QStringLiteral("Learning and growth");
 
     m_chat = new ChatPanel(this);
     setCentralWidget(m_chat);
@@ -40,12 +50,17 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
     resize(960, 720);
     setMinimumSize(640, 480);
 
-    populateModels();
+    populateModels({m_config.llmModel(), m_config.llmFallbackModel()});
 
     auto *readinessAction = new QAction(QStringLiteral("Readiness…"), this);
     readinessAction->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+R")));
     connect(readinessAction, &QAction::triggered, this, &MainWindow::showReadinessPanel);
     menuBar()->addAction(readinessAction);
+
+    auto *metricsAction = new QAction(QStringLiteral("Metrics"), this);
+    metricsAction->setShortcut(QKeySequence(Qt::Key_F12));
+    connect(metricsAction, &QAction::triggered, this, &MainWindow::showMetricsOverlay);
+    menuBar()->addAction(metricsAction);
 
     connect(m_chat, &ChatPanel::sendRequested, this, &MainWindow::onSendClicked);
     connect(m_chat, &ChatPanel::newChatRequested, this, &MainWindow::onNewChatClicked);
@@ -55,9 +70,13 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
     connect(m_chat, &ChatPanel::refreshDevicesRequested, this, &MainWindow::onRefreshMicsClicked);
     connect(m_chat, &ChatPanel::recordToggled, this, &MainWindow::onRecordClicked);
 
-    connect(m_client, &OllamaClient::responseChunk, this, &MainWindow::onResponseChunk);
-    connect(m_client, &OllamaClient::responseFinished, this, &MainWindow::onResponseFinished);
-    connect(m_client, &OllamaClient::errorOccurred, this, &MainWindow::onClientError);
+    if (m_llm.backend) {
+        connect(m_llm.backend.get(), &OllamaBackend::token, this, &MainWindow::onLlmToken);
+        connect(m_llm.backend.get(), &OllamaBackend::finished, this, &MainWindow::onLlmFinished);
+        connect(m_llm.backend.get(), &OllamaBackend::failed, this, &MainWindow::onLlmFailed);
+        connect(m_llm.backend.get(), &OllamaBackend::probed, this, &MainWindow::onModelsProbed);
+    }
+
     connect(m_speech, &SpeechInput::recordingChanged, this, &MainWindow::onRecordingChanged);
     connect(m_speech, &SpeechInput::partialTranscription, this, &MainWindow::onPartialTranscription);
     connect(m_speech, &SpeechInput::transcriptionReady, this, &MainWindow::onTranscriptionReady);
@@ -71,11 +90,22 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
     refreshSpeakers();
 
     m_chat->addMessageBubble(ChatRole::Assistant,
-                             QStringLiteral("Hi! I am Eagle. Choose a model above and ask anything. "
+                             QStringLiteral("Hi! I am Eagle. Choose Doubt mode, pick a model, and ask a question. "
                                             "Make sure Ollama is running on this machine."));
 }
 
 MainWindow::~MainWindow() = default;
+
+SessionLanguage MainWindow::currentLanguage() const
+{
+    const QString code = m_chat->languageCombo()->currentData().toString();
+    return code == QStringLiteral("hi") ? SessionLanguage::Hindi : SessionLanguage::English;
+}
+
+EagleMode MainWindow::currentMode() const
+{
+    return EagleMode::Doubt;
+}
 
 void MainWindow::wirePaths(const Paths &paths)
 {
@@ -83,15 +113,35 @@ void MainWindow::wirePaths(const Paths &paths)
     m_piper->setPiperPaths(paths.piperExecutable(), paths.piperVoiceOnnx(m_config.ttsVoiceEn()));
 }
 
-void MainWindow::populateModels()
+void MainWindow::populateModels(const QStringList &models)
 {
     m_chat->modelCombo()->clear();
-    m_chat->modelCombo()->addItem(m_config.llmModel());
-    const QString fallback = m_config.llmFallbackModel();
-    if (!fallback.isEmpty() && fallback != m_config.llmModel()) {
-        m_chat->modelCombo()->addItem(fallback);
+    QStringList seen;
+    for (const QString &model : models) {
+        if (model.isEmpty() || seen.contains(model)) {
+            continue;
+        }
+        seen.append(model);
+        m_chat->modelCombo()->addItem(model);
+    }
+    if (m_chat->modelCombo()->count() == 0) {
+        m_chat->modelCombo()->addItem(m_config.llmModel());
     }
     m_chat->modelCombo()->setCurrentIndex(0);
+}
+
+void MainWindow::onModelsProbed(bool ok, const QString &version, const QStringList &models)
+{
+    if (!ok) {
+        return;
+    }
+    QStringList merged = models;
+    merged.prepend(m_config.llmModel());
+    merged.append(m_config.llmFallbackModel());
+    populateModels(merged);
+    if (!version.isEmpty()) {
+        m_chat->statusLabel()->setText(QStringLiteral("Ollama %1").arg(version));
+    }
 }
 
 void MainWindow::showReadinessPanel()
@@ -101,9 +151,25 @@ void MainWindow::showReadinessPanel()
     panel->open();
 }
 
+void MainWindow::showMetricsOverlay()
+{
+    if (!m_metricsOverlay) {
+        m_metricsOverlay = new MetricsOverlay(*m_llm.metrics, this);
+    }
+    m_metricsOverlay->refresh();
+    m_metricsOverlay->show();
+    m_metricsOverlay->raise();
+    m_metricsOverlay->activateWindow();
+}
+
 void MainWindow::onSendClicked()
 {
-    if (m_client->isBusy()) {
+    if (!m_llm.backend) {
+        return;
+    }
+    if (m_llm.backend->isBusy()) {
+        m_chat->statusLabel()->setText(
+            QStringLiteral("Eagle is still loading the model — try again in a moment."));
         return;
     }
 
@@ -113,60 +179,104 @@ void MainWindow::onSendClicked()
     }
 
     m_chat->input()->clear();
-
     m_chat->addMessageBubble(ChatRole::User, text);
 
-    QJsonObject userMessage;
-    userMessage.insert(QStringLiteral("role"), QStringLiteral("user"));
-    userMessage.insert(QStringLiteral("content"), text);
-    m_chat->messages().append(userMessage);
+    TurnInputs inputs;
+    inputs.mode = currentMode();
+    inputs.language = currentLanguage();
+    inputs.wordLimit = m_chat->currentWordLimit();
+    inputs.question = text;
+
+    m_lastUserTurnMessage = m_llm.prompts->buildUserTurn(inputs, m_unitContext);
+    const QVector<LlmMessage> messages =
+        m_llm.prompts->buildMessages(inputs, m_unitContext, m_llm.history->messages());
+
+    LlmRequest req;
+    req.model = m_chat->modelCombo()->currentText();
+    req.messages = messages;
+    req.turnId = ++m_turnCounter;
+    req.purpose = QStringLiteral("turn");
+    req.temperature = m_config.llmTemperatureFor(QStringLiteral("doubt"));
+    req.topP = m_config.llmTopP();
+    req.topK = m_config.llmTopK();
+    req.repeatPenalty = m_config.llmRepeatPenalty();
+    req.numPredict = m_llm.estimator->numPredictForWordLimit(inputs.wordLimit, inputs.language);
 
     m_chat->setActiveAssistantBubble(m_chat->addMessageBubble(ChatRole::Assistant, QString()));
     m_chat->clearStreamBuffer();
-
     setGenerating(true);
-    m_client->sendChat(m_chat->modelCombo()->currentText(), m_chat->conversationForApi());
+    m_turnTimer.start();
+    m_llm.backend->start(req);
 }
 
 void MainWindow::onNewChatClicked()
 {
-    if (m_client->isBusy()) {
-        m_client->abortRequest();
+    if (m_llm.backend && m_llm.backend->isBusy()) {
+        m_llm.backend->abort();
     }
     m_piper->stop();
+    m_llm.history->reset();
     m_chat->clearConversation();
     m_chat->addMessageBubble(ChatRole::Assistant,
-                             QStringLiteral("New chat started. What would you like to talk about?"));
+                             QStringLiteral("New chat started. What would you like to ask?"));
     m_chat->statusLabel()->setText(QStringLiteral("Ready"));
 }
 
 void MainWindow::onStopClicked()
 {
-    m_client->abortRequest();
+    if (m_llm.backend) {
+        m_llm.backend->abort();
+    }
     m_piper->stop();
     setGenerating(false);
     m_chat->statusLabel()->setText(QStringLiteral("Stopped"));
 }
 
-void MainWindow::onResponseChunk(const QString &text)
+void MainWindow::onLlmToken(int turnId, const QString &text)
 {
+    Q_UNUSED(turnId);
     m_chat->appendAssistantStream(text);
 }
 
-void MainWindow::onResponseFinished()
+void MainWindow::onLlmFinished(int turnId, const QString &fullText, const LlmMetrics &metrics)
 {
-    const QString spoken = ChatBubble::spokenText(m_chat->streamBuffer());
-    m_chat->commitAssistantToHistory(m_chat->streamBuffer());
+    const QString spoken = ChatBubble::spokenText(fullText);
+    m_llm.history->appendTurn(m_lastUserTurnMessage, spoken, currentLanguage());
+
+    const int estimatedNew =
+        m_llm.estimator->estimateTokens(m_lastUserTurnMessage, currentLanguage());
+
+    TurnMetrics tm;
+    tm.turnId = turnId;
+    tm.model = m_chat->modelCombo()->currentText();
+    tm.firstTokenMs = metrics.msToFirstToken;
+    tm.llmDoneMs = m_turnTimer.elapsed();
+    tm.llm = metrics;
+    tm.estimatedNewPromptTokens = estimatedNew;
+    tm.cacheLikelyHit = metrics.promptEvalCount > 0 && estimatedNew > 0 &&
+                        metrics.promptEvalCount <= estimatedNew * 2;
+    m_llm.metrics->recordTurn(tm);
 
     m_chat->setActiveAssistantBubble(nullptr);
     m_chat->clearStreamBuffer();
     setGenerating(false);
     m_chat->statusLabel()->setText(QStringLiteral("Ready"));
 
+    if (m_metricsOverlay && m_metricsOverlay->isVisible()) {
+        m_metricsOverlay->refresh();
+    }
+
     if (m_chat->listenButton()->isChecked() && !m_speech->isRecording() && !spoken.isEmpty()) {
         m_piper->speak(spoken);
     }
     m_chat->scrollToBottom();
+}
+
+void MainWindow::onLlmFailed(int turnId, const QString &error, bool recoverable)
+{
+    Q_UNUSED(turnId);
+    Q_UNUSED(recoverable);
+    onClientError(error);
 }
 
 void MainWindow::onClientError(const QString &message)
@@ -186,15 +296,18 @@ void MainWindow::onClientError(const QString &message)
 
 void MainWindow::setGenerating(bool generating)
 {
-    m_chat->sendButton()->setDisabled(generating);
-    m_chat->modelCombo()->setDisabled(generating);
-    m_chat->wordLimitCombo()->setDisabled(generating);
-    m_chat->recordButton()->setDisabled(generating || m_speech->isBusy());
-    m_chat->micCombo()->setDisabled(generating || m_speech->isRecording());
-    m_chat->speakerCombo()->setDisabled(generating || m_piper->isBusy());
-    m_chat->refreshMicsButton()->setDisabled(generating || m_speech->isRecording());
+    const bool busy = m_llm.backend && m_llm.backend->isBusy();
+    m_chat->sendButton()->setDisabled(generating || busy);
+    m_chat->modelCombo()->setDisabled(generating || busy);
+    m_chat->modeCombo()->setDisabled(generating || busy);
+    m_chat->languageCombo()->setDisabled(generating || busy);
+    m_chat->wordLimitCombo()->setDisabled(generating || busy);
+    m_chat->recordButton()->setDisabled(generating || busy || m_speech->isBusy());
+    m_chat->micCombo()->setDisabled(generating || busy || m_speech->isRecording());
+    m_chat->speakerCombo()->setDisabled(generating || busy || m_piper->isBusy());
+    m_chat->refreshMicsButton()->setDisabled(generating || busy || m_speech->isRecording());
     m_chat->stopButton()->setText(QStringLiteral("Stop generating"));
-    m_chat->stopButton()->setVisible(generating || m_piper->isBusy());
+    m_chat->stopButton()->setVisible(generating || busy || m_piper->isBusy());
     if (!m_speech->isBusy()) {
         m_chat->statusLabel()->setText(generating ? QStringLiteral("Generating…") : QStringLiteral("Ready"));
     }
@@ -215,12 +328,13 @@ void MainWindow::refreshMicrophones()
     if (index < 0) {
         index = 0;
     }
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
     if (m_chat->micCombo()->count() == 0) {
         m_chat->micCombo()->addItem(QStringLiteral("No microphone found"));
         m_chat->recordButton()->setEnabled(false);
     } else {
         m_chat->micCombo()->setCurrentIndex(index);
-        m_chat->recordButton()->setEnabled(!m_client->isBusy());
+        m_chat->recordButton()->setEnabled(!llmBusy);
         onMicSelectionChanged(index);
     }
     m_chat->micCombo()->blockSignals(false);
@@ -293,7 +407,8 @@ void MainWindow::onRecordClicked()
         m_speech->stopRecording();
         return;
     }
-    if (m_client->isBusy() || m_speech->isBusy()) {
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    if (llmBusy || m_speech->isBusy()) {
         return;
     }
     onMicSelectionChanged(m_chat->micCombo()->currentIndex());
@@ -319,8 +434,9 @@ void MainWindow::onTranscriptionReady(const QString &text)
     showSpeechText(text);
     m_chat->input()->setFocus();
     m_chat->statusLabel()->setText(QStringLiteral("Ready"));
-    m_chat->recordButton()->setEnabled(!m_client->isBusy());
-    m_chat->sendButton()->setEnabled(!m_client->isBusy());
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    m_chat->recordButton()->setEnabled(!llmBusy);
+    m_chat->sendButton()->setEnabled(!llmBusy);
 }
 
 void MainWindow::onRecordingChanged(bool recording)
@@ -329,28 +445,31 @@ void MainWindow::onRecordingChanged(bool recording)
     m_chat->recordButton()->setProperty("recording", recording);
     m_chat->recordButton()->style()->unpolish(m_chat->recordButton());
     m_chat->recordButton()->style()->polish(m_chat->recordButton());
-    m_chat->micCombo()->setDisabled(recording || m_client->isBusy());
-    m_chat->refreshMicsButton()->setDisabled(recording || m_client->isBusy());
-    m_chat->sendButton()->setDisabled(recording || m_client->isBusy());
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    m_chat->micCombo()->setDisabled(recording || llmBusy);
+    m_chat->refreshMicsButton()->setDisabled(recording || llmBusy);
+    m_chat->sendButton()->setDisabled(recording || llmBusy);
 }
 
 void MainWindow::onSpeechError(const QString &message)
 {
     m_chat->statusLabel()->setText(QStringLiteral("Speech error"));
     m_chat->addMessageBubble(ChatRole::Assistant, message);
-    m_chat->recordButton()->setEnabled(!m_client->isBusy());
-    m_chat->sendButton()->setEnabled(!m_client->isBusy() && !m_speech->isRecording());
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    m_chat->recordButton()->setEnabled(!llmBusy);
+    m_chat->sendButton()->setEnabled(!llmBusy && !m_speech->isRecording());
 }
 
 void MainWindow::onPiperSpeakingChanged(bool speaking)
 {
-    m_chat->speakerCombo()->setDisabled(speaking || m_client->isBusy());
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    m_chat->speakerCombo()->setDisabled(speaking || llmBusy);
     if (speaking) {
         m_chat->stopButton()->setText(QStringLiteral("Stop speaking"));
         m_chat->stopButton()->setVisible(true);
         return;
     }
-    if (!m_client->isBusy()) {
+    if (!llmBusy) {
         m_chat->stopButton()->setVisible(false);
         m_chat->stopButton()->setText(QStringLiteral("Stop generating"));
     }
@@ -358,7 +477,8 @@ void MainWindow::onPiperSpeakingChanged(bool speaking)
 
 void MainWindow::onPiperStatus(const QString &status)
 {
-    if (!m_client->isBusy() && !m_speech->isBusy()) {
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    if (!llmBusy && !m_speech->isBusy()) {
         m_chat->statusLabel()->setText(status);
     }
 }
@@ -372,7 +492,8 @@ void MainWindow::onPiperError(const QString &message)
 void MainWindow::onSpeechStatus(const QString &status)
 {
     m_chat->statusLabel()->setText(status);
-    const bool locked = status == QStringLiteral("Transcribing…") || m_speech->isRecording() || m_client->isBusy();
-    m_chat->recordButton()->setDisabled(m_client->isBusy() || status == QStringLiteral("Transcribing…"));
+    const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
+    const bool locked = status == QStringLiteral("Transcribing…") || m_speech->isRecording() || llmBusy;
+    m_chat->recordButton()->setDisabled(llmBusy || status == QStringLiteral("Transcribing…"));
     m_chat->sendButton()->setDisabled(locked);
 }

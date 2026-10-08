@@ -122,6 +122,24 @@ QString AppConfig::stringAt(const QStringList &path, const QString &fallback) co
     return fallback;
 }
 
+int AppConfig::intAt(const QStringList &path, int fallback) const
+{
+    const QJsonValue value = valueAt(m_document, path);
+    if (value.isDouble()) {
+        return value.toInt(fallback);
+    }
+    return fallback;
+}
+
+double AppConfig::doubleAt(const QStringList &path, double fallback) const
+{
+    const QJsonValue value = valueAt(m_document, path);
+    if (value.isDouble()) {
+        return value.toDouble(fallback);
+    }
+    return fallback;
+}
+
 QString AppConfig::profile() const
 {
     return stringAt({QStringLiteral("profile")}, QStringLiteral("school"));
@@ -194,4 +212,77 @@ QString AppConfig::pathsUnitsDir() const
 QString AppConfig::pathsLogsDir() const
 {
     return stringAt({QStringLiteral("paths"), QStringLiteral("logs_dir")});
+}
+
+bool AppConfig::schoolAvoidMetaSchoolWords() const
+{
+    return valueAt(m_document, {QStringLiteral("school"), QStringLiteral("avoid_meta_school_words")})
+        .toBool(true);
+}
+
+bool AppConfig::llmFirstSentenceHint() const
+{
+    return valueAt(m_document, {QStringLiteral("llm"), QStringLiteral("first_sentence_hint")}).toBool(true);
+}
+
+qint64 AppConfig::llmKeepAlive() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("keep_alive")}, -1);
+}
+
+int AppConfig::llmNumCtx() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("num_ctx")}, 4096);
+}
+
+int AppConfig::llmNumThread() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("num_thread")}, 0);
+}
+
+int AppConfig::llmNumBatch() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("num_batch")}, 256);
+}
+
+int AppConfig::llmRequestTimeoutMs() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("request_timeout_ms")}, 60000);
+}
+
+int AppConfig::llmHistoryBudgetTokens() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("history_budget_tokens")}, 2200);
+}
+
+int AppConfig::llmHistoryTrimTokens() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("history_trim_to_tokens")}, 1400);
+}
+
+int AppConfig::llmMaxNewTurnTokens() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("max_new_turn_tokens")}, 350);
+}
+
+double AppConfig::llmTopP() const
+{
+    return doubleAt({QStringLiteral("llm"), QStringLiteral("top_p")}, 0.9);
+}
+
+int AppConfig::llmTopK() const
+{
+    return intAt({QStringLiteral("llm"), QStringLiteral("top_k")}, 40);
+}
+
+double AppConfig::llmRepeatPenalty() const
+{
+    return doubleAt({QStringLiteral("llm"), QStringLiteral("repeat_penalty")}, 1.1);
+}
+
+double AppConfig::llmTemperatureFor(const QString &modeKey) const
+{
+    const QJsonObject temps =
+        valueAt(m_document, {QStringLiteral("llm"), QStringLiteral("temperature")}).toObject();
+    return temps.value(modeKey).toDouble(0.6);
 }
