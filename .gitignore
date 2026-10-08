@@ -1,0 +1,70 @@
+# Build outputs
+build/
+cmake-build-*/
+out/
+*.exe
+*.dll
+*.obj
+*.o
+*.a
+*.lib
+*.pdb
+*.ilk
+
+# Qt / IDE
+CMakeLists.txt.user
+*.user
+*.autosave
+.qtcreator/
+.vscode/
+.idea/
+
+# Large local AI / TTS / STT assets (download separately — see README)
+tools/whisper/models/*.bin
+tools/whisper/Release/
+tools/whisper/*.zip
+tools/piper/voices/*.onnx
+tools/piper/piper/
+tools/piper/*.zip
+tools/**/*.zip
+
+# Archives / local dumps
+*.zip
+*.7z
+*.rar
+ollama.zip
+
+# Friend / separate project — do not upload
+New-discussion-eleven/
+
+# Local / private folder — do not upload
+vidyul/
+
+# Secrets and env
+.env
+.env.*
+**/key.json
+**/credentials.json
+**/*secret*
+**/logs/
+
+# Python / friend project caches (if present)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Cursor local
+.cursor/
+
+# Added for Eagle GD
+Information/
+tools/
+data/benchmarks/
+robot_bridge/vendor/
+*.db

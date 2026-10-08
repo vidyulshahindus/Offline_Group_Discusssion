@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/app.qss</file>
+        <file>config/eagle_config.defaults.json</file>
+    </qresource>
+</RCC>

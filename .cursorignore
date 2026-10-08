@@ -1,0 +1,8 @@
+New-discussion-eleven/
+**/.env*
+**/key.json
+**/credentials.json
+**/logs/
+**/tts_cache/
+**/generated_speech/
+*.db
