@@ -413,6 +413,10 @@ void OllamaBackend::parseStreamLine(const QByteArray &line)
     if (obj.value(QStringLiteral("done")).toBool()) {
         LlmMetrics metrics;
         metrics.promptEvalCount = obj.value(QStringLiteral("prompt_eval_count")).toInteger();
+        if (obj.contains(QStringLiteral("prompt_eval_cached_count"))) {
+            metrics.promptEvalCachedCount =
+                obj.value(QStringLiteral("prompt_eval_cached_count")).toInteger();
+        }
         metrics.promptEvalNs = obj.value(QStringLiteral("prompt_eval_duration")).toInteger();
         metrics.evalCount = obj.value(QStringLiteral("eval_count")).toInteger();
         metrics.evalNs = obj.value(QStringLiteral("eval_duration")).toInteger();

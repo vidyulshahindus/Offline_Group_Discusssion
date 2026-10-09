@@ -24,7 +24,8 @@ public:
     QVector<LlmMessage> buildMessages(const TurnInputs &inputs, const UnitContext &unit,
                                       const QVector<LlmMessage> &history) const;
 
-    int estimateNewTurnTokens(const TurnInputs &inputs, const UnitContext &unit) const;
+    int estimateNewTurnTokens(const TurnInputs &inputs, const UnitContext &unit,
+                              const QVector<LlmMessage> &history = {}) const;
 
 private:
     QString loadTemplateFile(const QString &name) const;

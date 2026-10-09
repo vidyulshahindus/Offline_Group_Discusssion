@@ -117,6 +117,7 @@ QHash<QString, QString> PromptBuilder::baseVars(const TurnInputs &inputs,
     vars.insert(QStringLiteral("register"),
                 unit.registerText.isEmpty() ? registerForGrade(programme, grade) : unit.registerText);
     vars.insert(QStringLiteral("register_short"), unit.registerShort);
+    vars.insert(QStringLiteral("has_unit"), unit.hasUnit ? QStringLiteral("1") : QString());
     vars.insert(QStringLiteral("unit_title"), unit.unitTitle);
     vars.insert(QStringLiteral("topic_title"), unit.topicTitle);
     vars.insert(QStringLiteral("concept"), unit.concept);
@@ -148,7 +149,6 @@ QString PromptBuilder::systemPrompt() const
     UnitContext unit;
     unit.hasUnit = false;
     unit.registerShort = QStringLiteral("Grade 9 MYP");
-    unit.concept = QStringLiteral("Learning and growth");
 
     if (m_cachedSystem.isEmpty() || m_cachedUnitContext.hasUnit != unit.hasUnit) {
         TurnInputs dummy;
@@ -190,11 +190,16 @@ QVector<LlmMessage> PromptBuilder::buildMessages(const TurnInputs &inputs, const
     return messages;
 }
 
-int PromptBuilder::estimateNewTurnTokens(const TurnInputs &inputs, const UnitContext &unit) const
+int PromptBuilder::estimateNewTurnTokens(const TurnInputs &inputs, const UnitContext &unit,
+                                         const QVector<LlmMessage> &history) const
 {
     UnitContext u = unit;
     if (!u.hasUnit) {
         u.registerShort = QStringLiteral("Grade 9 MYP");
     }
-    return m_estimator.estimateTokens(buildUserTurn(inputs, u), inputs.language);
+    int tokens = m_estimator.estimateTokens(buildUserTurn(inputs, u), inputs.language);
+    if (!history.isEmpty() && history.last().role == QStringLiteral("assistant")) {
+        tokens += m_estimator.estimateTokens(history.last().content, inputs.language);
+    }
+    return tokens;
 }

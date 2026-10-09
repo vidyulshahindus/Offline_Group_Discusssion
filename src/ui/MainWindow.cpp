@@ -42,7 +42,7 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
 
     m_unitContext.hasUnit = false;
     m_unitContext.registerShort = QStringLiteral("Grade 9 MYP");
-    m_unitContext.concept = QStringLiteral("Learning and growth");
+    m_unitContext.concept.clear();
 
     m_chat = new ChatPanel(this);
     setCentralWidget(m_chat);
@@ -241,10 +241,19 @@ void MainWindow::onLlmToken(int turnId, const QString &text)
 void MainWindow::onLlmFinished(int turnId, const QString &fullText, const LlmMetrics &metrics)
 {
     const QString spoken = ChatBubble::spokenText(fullText);
+
+    int estimatedNew =
+        m_llm.estimator->estimateTokens(m_lastUserTurnMessage, currentLanguage());
+    const QVector<LlmMessage> historyBeforeAppend = m_llm.history->messages();
+    if (!historyBeforeAppend.isEmpty()
+        && historyBeforeAppend.last().role == QStringLiteral("assistant")) {
+        estimatedNew += m_llm.estimator->estimateTokens(historyBeforeAppend.last().content,
+                                                        currentLanguage());
+    }
+
     m_llm.history->appendTurn(m_lastUserTurnMessage, spoken, currentLanguage());
 
-    const int estimatedNew =
-        m_llm.estimator->estimateTokens(m_lastUserTurnMessage, currentLanguage());
+    const qint64 promptNew = metrics.promptEvalNewCount();
 
     TurnMetrics tm;
     tm.turnId = turnId;
@@ -253,8 +262,8 @@ void MainWindow::onLlmFinished(int turnId, const QString &fullText, const LlmMet
     tm.llmDoneMs = m_turnTimer.elapsed();
     tm.llm = metrics;
     tm.estimatedNewPromptTokens = estimatedNew;
-    tm.cacheLikelyHit = metrics.promptEvalCount > 0 && estimatedNew > 0 &&
-                        metrics.promptEvalCount <= estimatedNew * 2;
+    tm.cacheLikelyHit =
+        promptNew > 0 && estimatedNew > 0 && promptNew <= static_cast<qint64>(estimatedNew) * 2;
     m_llm.metrics->recordTurn(tm);
 
     m_chat->setActiveAssistantBubble(nullptr);

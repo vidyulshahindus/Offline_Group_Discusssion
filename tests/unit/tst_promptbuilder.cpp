@@ -5,6 +5,9 @@
 #include "TokenEstimator.h"
 
 #include <QCoreApplication>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QTest>
 
 class TestPromptBuilder : public QObject
@@ -15,7 +18,21 @@ private slots:
     void initTestCase();
     void systemPromptStableAcrossTurnsAndLanguages();
     void tailIsLastInDoubtTurn();
+    void doubtWithoutUnitOmitsConceptLink();
+    void turnThreeExtendsTurnTwoMessagePrefix();
 };
+
+static QByteArray messagesJson(const QVector<LlmMessage> &messages)
+{
+    QJsonArray arr;
+    for (const LlmMessage &message : messages) {
+        QJsonObject obj;
+        obj.insert(QStringLiteral("role"), message.role);
+        obj.insert(QStringLiteral("content"), message.content);
+        arr.append(obj);
+    }
+    return QJsonDocument(arr).toJson(QJsonDocument::Compact);
+}
 
 void TestPromptBuilder::initTestCase()
 {
@@ -70,6 +87,78 @@ void TestPromptBuilder::tailIsLastInDoubtTurn()
     const int doubtPos = turn.indexOf(QStringLiteral("[DOUBT]"));
     QVERIFY(tailPos > doubtPos);
     QVERIFY(turn.indexOf(QStringLiteral("Maximum 75 words"), tailPos) >= 0 || tailPos > doubtPos);
+}
+
+void TestPromptBuilder::doubtWithoutUnitOmitsConceptLink()
+{
+    AppConfig config;
+    Paths paths(config);
+    TokenEstimator estimator(config);
+    PromptBuilder builder(config, paths, estimator);
+    QVERIFY(builder.loadTemplates());
+
+    TurnInputs inputs;
+    inputs.question = QStringLiteral("What is gravity?");
+    UnitContext unit;
+    unit.hasUnit = false;
+    unit.registerShort = QStringLiteral("Grade 9 MYP");
+
+    const QString turn = builder.buildUserTurn(inputs, unit);
+    QVERIFY(!turn.contains(QStringLiteral("unit concept")));
+    QVERIFY(!turn.contains(QStringLiteral("Learning and growth")));
+}
+
+void TestPromptBuilder::turnThreeExtendsTurnTwoMessagePrefix()
+{
+    AppConfig config;
+    Paths paths(config);
+    TokenEstimator estimator(config);
+    PromptBuilder builder(config, paths, estimator);
+    QVERIFY(builder.loadTemplates());
+
+    UnitContext unit;
+    unit.hasUnit = false;
+    unit.registerShort = QStringLiteral("Grade 9 MYP");
+
+    QVector<LlmMessage> history;
+    TurnInputs t1;
+    t1.question = QStringLiteral("What is osmosis?");
+    const QVector<LlmMessage> m1 = builder.buildMessages(t1, unit, history);
+    LlmMessage h1u;
+    h1u.role = QStringLiteral("user");
+    h1u.content = builder.buildUserTurn(t1, unit);
+    history.append(h1u);
+    LlmMessage h1a;
+    h1a.role = QStringLiteral("assistant");
+    h1a.content = QStringLiteral("Osmosis is water movement across a membrane.");
+    history.append(h1a);
+
+    TurnInputs t2;
+    t2.question = QStringLiteral("Why does it matter?");
+    const QVector<LlmMessage> m2 = builder.buildMessages(t2, unit, history);
+    LlmMessage h2u;
+    h2u.role = QStringLiteral("user");
+    h2u.content = builder.buildUserTurn(t2, unit);
+    history.append(h2u);
+    LlmMessage h2a;
+    h2a.role = QStringLiteral("assistant");
+    h2a.content = QStringLiteral("It keeps cells alive.");
+    history.append(h2a);
+
+    TurnInputs t3;
+    t3.question = QStringLiteral("Give an example.");
+    const QVector<LlmMessage> m3 = builder.buildMessages(t3, unit, history);
+
+    QCOMPARE(m2.size(), 4);
+    QCOMPARE(m3.size(), 6);
+    for (int i = 0; i < m2.size(); ++i) {
+        QCOMPARE(m2.at(i).role, m3.at(i).role);
+        QCOMPARE(m2.at(i).content, m3.at(i).content);
+    }
+    QCOMPARE(m3.at(4).role, QStringLiteral("assistant"));
+    QCOMPARE(m3.at(4).content, h2a.content);
+    QCOMPARE(m3.at(5).role, QStringLiteral("user"));
+    QVERIFY(m3.at(5).content.contains(QStringLiteral("Give an example")));
 }
 
 int main(int argc, char *argv[])

@@ -13,12 +13,21 @@ struct LlmMessage {
 
 struct LlmMetrics {
     qint64 promptEvalCount = 0;
+    qint64 promptEvalCachedCount = -1;
     qint64 promptEvalNs = 0;
     qint64 evalCount = 0;
     qint64 evalNs = 0;
     qint64 loadNs = 0;
     qint64 totalNs = 0;
     qint64 msToFirstToken = -1;
+
+    qint64 promptEvalNewCount() const
+    {
+        if (promptEvalCachedCount >= 0 && promptEvalCount >= promptEvalCachedCount) {
+            return promptEvalCount - promptEvalCachedCount;
+        }
+        return promptEvalCount;
+    }
 };
 
 struct LlmRequest {

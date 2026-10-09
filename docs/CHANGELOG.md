@@ -7,6 +7,7 @@
 - Serial startup (`runStartupSequence`): show → preload → warm-up on one aux connection; warm-up uses `stream: false`.
 - `isBusy()` blocks user turns while aux or stream is active; `think: false` from `/api/show`, name heuristic, or per-model memory after a thinking-only stream.
 - On thinking-only NDJSON (non-empty `message.thinking`, empty `content`), abort once and retry with `think: false`; remember model.
+- F12 cache hint uses `prompt_eval_count − prompt_eval_cached_count` (Ollama reports total + cached separately); doubt turn omits concept link when no unit is loaded.
 - Stream parser: ignore `message.thinking` for UI; fail clearly on `done` with empty content; log full `/api/chat` bodies under `eagle.ollama`.
 - Manual Ollama curl fixtures: `tests/fixtures/ollama/`; regression `tst_ollamabackend` (mock HTTP NDJSON server).
 
