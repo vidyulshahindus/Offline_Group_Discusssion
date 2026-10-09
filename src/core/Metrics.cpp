@@ -13,6 +13,12 @@ void Metrics::recordTurn(const TurnMetrics &turn)
             m_firstTokenSamples.remove(0, m_firstTokenSamples.size() - 50);
         }
     }
+    if (turn.t0ToT1Ms >= 0) {
+        m_t0ToT1Samples.append(turn.t0ToT1Ms);
+        if (m_t0ToT1Samples.size() > 50) {
+            m_t0ToT1Samples.remove(0, m_t0ToT1Samples.size() - 50);
+        }
+    }
 }
 
 QVector<qint64> Metrics::recentFirstTokenMs() const
@@ -38,4 +44,14 @@ double Metrics::rollingP50FirstToken() const
 double Metrics::rollingP95FirstToken() const
 {
     return percentile(m_firstTokenSamples, 0.95);
+}
+
+double Metrics::rollingP50T0ToT1() const
+{
+    return percentile(m_t0ToT1Samples, 0.5);
+}
+
+double Metrics::rollingP95T0ToT1() const
+{
+    return percentile(m_t0ToT1Samples, 0.95);
 }

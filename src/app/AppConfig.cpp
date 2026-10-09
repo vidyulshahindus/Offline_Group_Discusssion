@@ -172,6 +172,12 @@ QString AppConfig::sttModel() const
     return stringAt({QStringLiteral("stt"), QStringLiteral("model")}, QStringLiteral("ggml-base.bin"));
 }
 
+QString AppConfig::sttFallbackModel() const
+{
+    return stringAt({QStringLiteral("stt"), QStringLiteral("fallback_model")},
+                    QStringLiteral("ggml-base.bin"));
+}
+
 QString AppConfig::ttsPiperExe() const
 {
     return stringAt({QStringLiteral("tts"), QStringLiteral("piper_exe")});
@@ -192,6 +198,50 @@ QString AppConfig::ttsVoiceHi() const
 {
     return stringAt({QStringLiteral("tts"), QStringLiteral("voices"), QStringLiteral("hi")},
                     QStringLiteral("hi_IN-priyamvada-medium"));
+}
+
+QString AppConfig::ttsBackend() const
+{
+    return stringAt({QStringLiteral("tts"), QStringLiteral("backend")}, QStringLiteral("piper_cli"));
+}
+
+double AppConfig::ttsLengthScaleDefault() const
+{
+    return doubleAt({QStringLiteral("tts"), QStringLiteral("length_scale"), QStringLiteral("default")},
+                    1.1);
+}
+
+double AppConfig::ttsLengthScaleHi() const
+{
+    return doubleAt({QStringLiteral("tts"), QStringLiteral("length_scale"), QStringLiteral("hi")},
+                    1.15);
+}
+
+int AppConfig::ttsFillerAfterMs() const
+{
+    return intAt({QStringLiteral("tts"), QStringLiteral("filler_after_ms")}, 3500);
+}
+
+bool AppConfig::ttsFillersEnabled() const
+{
+    return valueAt(m_document, {QStringLiteral("tts"), QStringLiteral("fillers_enabled")})
+        .toBool(true);
+}
+
+double AppConfig::ttsVolume() const
+{
+    return doubleAt({QStringLiteral("tts"), QStringLiteral("volume")}, 0.7);
+}
+
+double AppConfig::ttsSentenceSilenceS() const
+{
+    return doubleAt({QStringLiteral("tts"), QStringLiteral("sentence_silence_s")}, 0.2);
+}
+
+QString AppConfig::audioPlaybackBackend() const
+{
+    return stringAt({QStringLiteral("audio"), QStringLiteral("backend")},
+                    QStringLiteral("mediaplayer"));
 }
 
 QString AppConfig::pathsToolsDir() const

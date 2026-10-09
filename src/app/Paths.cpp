@@ -16,7 +16,10 @@ Paths::Paths(const AppConfig &config)
     m_toolsDir = resolveToolsDir();
     m_dataDir = config.pathsDataDir();
     if (m_dataDir.isEmpty()) {
-        m_dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        m_dataDir = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+        if (m_dataDir.isEmpty()) {
+            m_dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        }
     }
     m_unitsDir = config.pathsUnitsDir();
     if (m_unitsDir.isEmpty()) {
@@ -132,12 +135,28 @@ QString Paths::whisperCli() const
 
 QString Paths::whisperModel(const QString &modelFile) const
 {
-    const QString file = modelFile.isEmpty() ? m_config.sttModel() : modelFile;
+    QStringList files;
+    if (!modelFile.isEmpty()) {
+        files.append(modelFile);
+    } else {
+        files.append(m_config.sttModel());
+        files.append(m_config.sttFallbackModel());
+    }
     const QString tools = m_toolsDir;
-    return firstExisting({
-        QDir(tools).filePath(QStringLiteral("whisper/models/") + file),
-        QDir(tools).filePath(QStringLiteral("whisper/") + file),
-    });
+    for (const QString &file : files) {
+        if (file.isEmpty()) {
+            continue;
+        }
+        const QString found = firstExisting({
+            QDir(tools).filePath(QStringLiteral("whisper/models/") + file),
+            QDir(tools).filePath(QStringLiteral("whisper/Release/models/") + file),
+            QDir(tools).filePath(QStringLiteral("whisper/") + file),
+        });
+        if (!found.isEmpty()) {
+            return found;
+        }
+    }
+    return {};
 }
 
 QString Paths::piperExecutable() const

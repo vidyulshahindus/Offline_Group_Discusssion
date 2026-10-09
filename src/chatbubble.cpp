@@ -1,5 +1,7 @@
 #include "chatbubble.h"
 
+#include "TextPostProcessor.h"
+
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QRegularExpression>
@@ -57,10 +59,7 @@ QString toBubbleHtml(const QString &plain)
 
 QString ChatBubble::spokenText(const QString &raw)
 {
-    QString text = displayTextForAssistant(raw);
-    text.replace(QStringLiteral("**"), QString());
-    text.replace(QStringLiteral("__"), QString());
-    return text.trimmed();
+    return TextPostProcessor::stripForSpeech(raw);
 }
 
 ChatBubble::ChatBubble(ChatRole role, const QString &text, QWidget *parent)
@@ -102,7 +101,7 @@ void ChatBubble::setText(const QString &text)
 {
     m_rawText = text;
     if (m_role == ChatRole::Assistant) {
-        const QString visible = displayTextForAssistant(m_rawText);
+        const QString visible = TextPostProcessor::stripForDisplay(m_rawText);
         if (visible.isEmpty() && !m_rawText.isEmpty()) {
             m_label->setText(QStringLiteral("Thinking…"));
         } else if (visible.isEmpty()) {

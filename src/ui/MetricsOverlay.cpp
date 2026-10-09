@@ -1,6 +1,7 @@
 #include "MetricsOverlay.h"
 
 #include "Metrics.h"
+#include "TurnTimestamps.h"
 
 #include <QLabel>
 #include <QShowEvent>
@@ -49,20 +50,36 @@ void MetricsOverlay::refresh()
                          .arg(t.estimatedNewPromptTokens)
                          .arg(cache);
     }
+    const TurnTimestamps &ts = t.timestamps;
     m_body->setText(
         QStringLiteral("Model: %1\n"
                        "Last turn #%2\n"
-                       "First token: %3 ms\n"
-                       "%4\n"
-                       "eval_count: %5\n"
-                       "load_duration: %6 ms\n"
-                       "Rolling first-token p50: %7 ms | p95: %8 ms")
+                       "T0→T1 (first audio): %3 ms | rolling p50 %4 / p95 %5\n"
+                       "Timestamps (ms from T0): prompt %6 | sent %7 | 1st token %8 | "
+                       "1st sentence %9 | 1st TTS %10 | LLM done %11 | speech done %12\n"
+                       "First token (LLM): %13 ms\n"
+                       "TTS synth (turn): first %14 ms | warm %15 ms\n"
+                       "TTS worker: cold %16 ms | warm %17 ms (persistent piper)\n"
+                       "%18\n"
+                       "eval_count: %19 | load: %20 ms")
             .arg(t.model.isEmpty() ? QStringLiteral("—") : t.model)
             .arg(t.turnId)
+            .arg(t.t0ToT1Ms)
+            .arg(m_metrics.rollingP50T0ToT1(), 0, 'f', 0)
+            .arg(m_metrics.rollingP95T0ToT1(), 0, 'f', 0)
+            .arg(ts.promptBuiltMs)
+            .arg(ts.requestSentMs)
+            .arg(ts.firstTokenMs)
+            .arg(ts.firstSentenceMs)
+            .arg(ts.firstTtsDoneMs)
+            .arg(ts.llmDoneMs)
+            .arg(ts.speechDoneMs)
             .arg(t.firstTokenMs)
+            .arg(t.ttsFirstSynthMs)
+            .arg(t.ttsWarmSynthMs)
+            .arg(t.ttsWorkerColdSynthMs)
+            .arg(t.ttsWorkerWarmSynthMs)
             .arg(promptLine)
             .arg(t.llm.evalCount)
-            .arg(t.llm.loadNs / 1000000)
-            .arg(m_metrics.rollingP50FirstToken(), 0, 'f', 0)
-            .arg(m_metrics.rollingP95FirstToken(), 0, 'f', 0));
+            .arg(t.llm.loadNs / 1000000));
 }

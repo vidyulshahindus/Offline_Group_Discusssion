@@ -4,7 +4,9 @@
 
 namespace EagleLog {
 
-void install(const QString &logsDir);
+void install(const QString &preferredLogsDir);
 void shutdown();
+QString directory();
+QString filePath();
 
 } // namespace EagleLog

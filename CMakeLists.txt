@@ -37,6 +37,17 @@ set(EAGLEGD_UI_SOURCES
 
 set(EAGLEGD_CORE_SOURCES
     src/core/Metrics.cpp
+    src/core/HindiFeminineFixer.cpp
+    src/core/TextPostProcessor.cpp
+    src/core/SentenceStreamer.cpp
+    src/core/TurnSpeechController.cpp
+)
+
+set(EAGLEGD_TTS_SOURCES
+    src/tts/SpeechQueuePlayer.cpp
+    src/tts/PiperCliBackend.cpp
+    src/tts/TtsEngine.cpp
+    src/tts/FillerCache.cpp
 )
 
 set(EAGLEGD_PROTOTYPE_SOURCES
@@ -49,12 +60,13 @@ qt_add_executable(EagleGD
     ${EAGLEGD_APP_SOURCES}
     ${EAGLEGD_UI_SOURCES}
     ${EAGLEGD_CORE_SOURCES}
+    ${EAGLEGD_TTS_SOURCES}
     ${EAGLEGD_LLM_SOURCES}
     ${EAGLEGD_PROTOTYPE_SOURCES}
     resources/resources.qrc
 )
 
-target_include_directories(EagleGD PRIVATE src src/app src/ui src/llm src/core)
+target_include_directories(EagleGD PRIVATE src src/app src/ui src/llm src/core src/tts)
 
 target_link_libraries(EagleGD PRIVATE Qt6::Widgets Qt6::Network Qt6::Multimedia)
 
@@ -91,7 +103,7 @@ set(EAGLE_TEST_HISTORY_SOURCES
 
 function(eagle_add_unit_test name sources)
     qt_add_executable(${name} tests/unit/${name}.cpp ${sources})
-    target_include_directories(${name} PRIVATE src src/app src/llm src/core)
+    target_include_directories(${name} PRIVATE src src/app src/llm src/core src/tts)
     target_link_libraries(${name} PRIVATE ${EAGLE_TEST_LIBS})
     add_test(NAME ${name} COMMAND ${name})
 endfunction()
@@ -105,3 +117,19 @@ set(EAGLE_TEST_OLLAMA_SOURCES
 eagle_add_unit_test(tst_promptbuilder "${EAGLE_TEST_PROMPT_SOURCES}")
 eagle_add_unit_test(tst_historymanager "${EAGLE_TEST_HISTORY_SOURCES}")
 eagle_add_unit_test(tst_ollamabackend "${EAGLE_TEST_OLLAMA_SOURCES}")
+
+set(EAGLE_TEST_TEXTPOST_SOURCES
+    src/core/HindiFeminineFixer.cpp
+    src/core/TextPostProcessor.cpp
+)
+set(EAGLE_TEST_STREAMER_SOURCES
+    src/core/HindiFeminineFixer.cpp
+    src/core/TextPostProcessor.cpp
+    src/core/SentenceStreamer.cpp
+)
+
+eagle_add_unit_test(tst_hindifixer src/core/HindiFeminineFixer.cpp)
+eagle_add_unit_test(tst_textpostprocessor "${EAGLE_TEST_TEXTPOST_SOURCES}")
+eagle_add_unit_test(tst_sentencestreamer "${EAGLE_TEST_STREAMER_SOURCES}")
+eagle_add_unit_test(tst_speechqueueplayer src/tts/SpeechQueuePlayer.cpp)
+target_link_libraries(tst_speechqueueplayer PRIVATE Qt6::Multimedia)

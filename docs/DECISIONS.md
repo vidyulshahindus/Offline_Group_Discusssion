@@ -1,5 +1,17 @@
 # Architecture decisions
 
+## M2
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-10-09 | **TTS:** One **persistent** `piper.exe` per voice (EN/HI); each sentence is one `--json-input` line on stdin; output WAV path read from **stdout** (line-delimited, flushed per job). Worker restarts on crash or `length_scale` change. F12 shows turn first/warm synth ms and worker cold/warm ms. `PiperHttpBackend` reserved if stdout piping fails on NUC (not needed on dev laptop). | §11.1. |
+| 2026-10-09 | **Fillers:** `fillers.json` pre-synthesised to `<data>/cache/fillers/<voice>/<ls>/<sha1>.wav` at startup; play at `filler_after_ms` if no answer audio yet; excluded from T1; no repeat back-to-back; skipped in `Practice` mode. | §11.4. |
+| 2026-10-09 | **Hindi voice:** `hi_IN-priyamvada-medium` synthesizes successfully with the legacy C++ Piper binary (`--json-input`, `length_scale` 1.15). | Verified on dev laptop 2026-10-09. |
+| 2026-10-09 | **STT paths:** `Paths::whisperModel` tries primary + `stt.fallback_model` under `tools/whisper/models/` (fixes “whisper not found” when config asks for `ggml-small` but only `ggml-base.bin` is installed). | M2 path fix; M3 owns STT pipeline. |
+| 2026-10-09 | **Qwen vs llama cache (bench-cache-turn):** `eagle-clm` ~**152** new prompt tokens/turn vs `llama3.2:3b` ~**23** — Qwen re-evaluates prior assistant text each turn. Revisit at M10 benchmark: Doubt without assistant history, or `/api/generate` + owned template. | §9.3 NUC latency budget. |
+| 2026-10-09 | Per-turn timestamps §18.3 in memory + F12; SQLite logging deferred to M7. | M2. |
+| 2026-10-09 | **Playback:** Default `audio.backend` is **`mediaplayer`**: `SpeechQueuePlayer` plays Piper WAV files with two `QMediaPlayer`s sharing one `QAudioOutput` (prototype `piperspeaker.cpp` approach). Pause between sentences is `QTimer` (`tts.sentence_silence_s`, default 0.2 s), not PCM silence. Volume is `QAudioOutput::setVolume(tts.volume)`. The `QAudioSink` + `PcmConverter` path is unwired (`audio.backend=sink` logs a warning and still uses mediaplayer). Reason: WASAPI format, speed, clipping, and idle-gap bugs; a full answer still played in ~2 s. | M2 TTS. |
+
 ## M1
 
 | Date | Decision | Rationale |

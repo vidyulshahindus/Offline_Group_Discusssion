@@ -126,7 +126,7 @@ int Application::run()
         m_llm->backend->probe();
     }
 
-    auto *readiness = new ReadinessPanel(*m_supervisor, m_mainWindow);
+    auto *readiness = new ReadinessPanel(*m_supervisor, m_mainWindow->turnSpeech(), m_mainWindow);
     readiness->setAttribute(Qt::WA_DeleteOnClose);
     readiness->show();
 

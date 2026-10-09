@@ -82,13 +82,14 @@
       "default": 1.1,
       "hi": 1.15
     },
-    "sentence_silence_s": 0.25,
-    "volume": 1.0,
+    "sentence_silence_s": 0.2,
+    "volume": 0.7,
     "fillers_enabled": true,
     "filler_after_ms": 3500,
     "output_device": ""
   },
   "audio": {
+    "backend": "mediaplayer",
     "input_device": "",
     "push_to_talk": true,
     "mute_mic_while_speaking": true

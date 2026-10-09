@@ -12,8 +12,10 @@ class LlmServices;
 class MetricsOverlay;
 class Paths;
 class PiperSpeaker;
+class Paths;
 class ServiceSupervisor;
 class SpeechInput;
+class TurnSpeechController;
 
 class MainWindow : public QMainWindow
 {
@@ -23,6 +25,8 @@ public:
     MainWindow(const AppConfig &config, const Paths &paths, ServiceSupervisor &supervisor,
                LlmServices &llm, QWidget *parent = nullptr);
     ~MainWindow() override;
+
+    TurnSpeechController *turnSpeech() const { return m_turnSpeech; }
 
 private slots:
     void onSendClicked();
@@ -44,11 +48,16 @@ private slots:
     void onPiperSpeakingChanged(bool speaking);
     void onPiperStatus(const QString &status);
     void onPiperError(const QString &message);
+    void onTurnFirstAudio(int turnId, qint64 t1Ms);
+    void onWordBudgetReached(int turnId);
+    void onTurnSpeechError(const QString &message);
     void showReadinessPanel();
     void showMetricsOverlay();
 
 private:
     void onClientError(const QString &message);
+    void onTurnIdle(int turnId);
+    void refreshTurnChrome();
     void setGenerating(bool generating);
     void refreshMicrophones();
     void refreshSpeakers();
@@ -58,7 +67,11 @@ private:
     SessionLanguage currentLanguage() const;
     EagleMode currentMode() const;
 
+    void finalizeTurnMetrics(int turnId, const LlmMetrics &metrics,
+                             const QVector<LlmMessage> &historyBeforeAppend);
+
     const AppConfig &m_config;
+    const Paths &m_paths;
     ServiceSupervisor &m_supervisor;
     LlmServices &m_llm;
 
@@ -66,10 +79,13 @@ private:
     MetricsOverlay *m_metricsOverlay = nullptr;
     SpeechInput *m_speech = nullptr;
     PiperSpeaker *m_piper = nullptr;
+    TurnSpeechController *m_turnSpeech = nullptr;
 
     QString m_speechPrefix;
     QString m_lastUserTurnMessage;
     int m_turnCounter = 0;
     QElapsedTimer m_turnTimer;
     UnitContext m_unitContext;
+    LlmMetrics m_pendingLlmMetrics;
+    bool m_pendingTurnOpen = false;
 };

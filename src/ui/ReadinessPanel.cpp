@@ -1,12 +1,18 @@
 #include "ReadinessPanel.h"
 
+#include "Logging.h"
 #include "ServiceSupervisor.h"
+#include "TurnSpeechController.h"
 
+#include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QUrl>
 #include <QVBoxLayout>
 
 namespace {
@@ -30,12 +36,14 @@ QString healthText(ServiceHealth health)
 
 } // namespace
 
-ReadinessPanel::ReadinessPanel(ServiceSupervisor &supervisor, QWidget *parent)
+ReadinessPanel::ReadinessPanel(ServiceSupervisor &supervisor, TurnSpeechController *turnSpeech,
+                               QWidget *parent)
     : QDialog(parent)
     , m_supervisor(supervisor)
+    , m_turnSpeech(turnSpeech)
 {
     setWindowTitle(QStringLiteral("Eagle GD — Readiness"));
-    resize(560, 420);
+    resize(580, 480);
 
     auto *root = new QVBoxLayout(this);
 
@@ -46,12 +54,36 @@ ReadinessPanel::ReadinessPanel(ServiceSupervisor &supervisor, QWidget *parent)
     titleFont.setBold(true);
     m_title->setFont(titleFont);
 
+    m_logLabel = new QLabel(this);
+    m_logLabel->setObjectName(QStringLiteral("readinessDetail"));
+    m_logLabel->setWordWrap(true);
+    m_logLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    refreshLogLabel();
+
     auto *scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
     auto *scrollHost = new QWidget(scroll);
     m_rowsLayout = new QVBoxLayout(scrollHost);
     m_rowsLayout->setSpacing(8);
     scroll->setWidget(scrollHost);
+
+    m_testToneButton = new QPushButton(QStringLiteral("Test tone (440 Hz, 1 s)"), this);
+    m_testToneButton->setEnabled(m_turnSpeech != nullptr);
+    connect(m_testToneButton, &QPushButton::clicked, this, &ReadinessPanel::onTestToneClicked);
+
+    m_testVoiceButton = new QPushButton(QStringLiteral("Test voice (English + Hindi)"), this);
+    m_testVoiceButton->setEnabled(m_turnSpeech != nullptr);
+    connect(m_testVoiceButton, &QPushButton::clicked, this, &ReadinessPanel::onTestVoiceClicked);
+
+    if (m_turnSpeech) {
+        connect(m_turnSpeech, &TurnSpeechController::readinessVoiceTestFinished, this,
+                &ReadinessPanel::onVoiceTestFinished);
+        connect(m_turnSpeech, &TurnSpeechController::testToneFinished, this,
+                &ReadinessPanel::onTestToneFinished);
+    }
+
+    m_openLogButton = new QPushButton(QStringLiteral("Open log folder"), this);
+    connect(m_openLogButton, &QPushButton::clicked, this, &ReadinessPanel::onOpenLogFolderClicked);
 
     auto *refresh = new QPushButton(QStringLiteral("Refresh checks"), this);
     connect(refresh, &QPushButton::clicked, this, &ReadinessPanel::onRefreshClicked);
@@ -60,7 +92,11 @@ ReadinessPanel::ReadinessPanel(ServiceSupervisor &supervisor, QWidget *parent)
     connect(close, &QPushButton::clicked, this, &QDialog::accept);
 
     root->addWidget(m_title);
+    root->addWidget(m_logLabel);
     root->addWidget(scroll, 1);
+    root->addWidget(m_testToneButton);
+    root->addWidget(m_testVoiceButton);
+    root->addWidget(m_openLogButton);
     root->addWidget(refresh);
     root->addWidget(close);
 
@@ -68,9 +104,77 @@ ReadinessPanel::ReadinessPanel(ServiceSupervisor &supervisor, QWidget *parent)
     rebuildRows();
 }
 
+void ReadinessPanel::refreshLogLabel()
+{
+    const QString path = EagleLog::filePath();
+    if (path.isEmpty()) {
+        m_logLabel->setText(QStringLiteral("Log file: (not created)"));
+    } else {
+        m_logLabel->setText(QStringLiteral("Log file: %1").arg(QDir::toNativeSeparators(path)));
+    }
+}
+
+void ReadinessPanel::onTestToneClicked()
+{
+    if (!m_turnSpeech) {
+        return;
+    }
+    m_testToneButton->setEnabled(false);
+    m_testToneButton->setText(QStringLiteral("Playing test tone…"));
+    m_turnSpeech->playTestTone();
+}
+
+void ReadinessPanel::onTestToneFinished(bool ok, const QString &detail)
+{
+    m_testToneButton->setEnabled(m_turnSpeech != nullptr);
+    if (ok) {
+        m_testToneButton->setText(QStringLiteral("Test tone (440 Hz, 1 s) — played"));
+    } else {
+        m_testToneButton->setText(
+            QStringLiteral("Test tone failed — %1").arg(detail.left(80)));
+    }
+}
+
+void ReadinessPanel::onOpenLogFolderClicked()
+{
+    refreshLogLabel();
+    QString dir = EagleLog::directory();
+    if (dir.isEmpty() && !EagleLog::filePath().isEmpty()) {
+        dir = QFileInfo(EagleLog::filePath()).absolutePath();
+    }
+    if (dir.isEmpty()) {
+        m_logLabel->setText(QStringLiteral("Log file: (not created)"));
+        return;
+    }
+    QDir().mkpath(dir);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+}
+
+void ReadinessPanel::onTestVoiceClicked()
+{
+    if (!m_turnSpeech) {
+        return;
+    }
+    m_testVoiceButton->setEnabled(false);
+    m_testVoiceButton->setText(QStringLiteral("Testing voice…"));
+    m_turnSpeech->playReadinessVoiceTest();
+}
+
+void ReadinessPanel::onVoiceTestFinished(bool ok, const QString &detail)
+{
+    m_testVoiceButton->setEnabled(m_turnSpeech != nullptr);
+    if (ok) {
+        m_testVoiceButton->setText(QStringLiteral("Test voice (English + Hindi) — OK"));
+    } else {
+        m_testVoiceButton->setText(
+            QStringLiteral("Test voice failed — %1").arg(detail.left(80)));
+    }
+}
+
 void ReadinessPanel::onRefreshClicked()
 {
     m_supervisor.refreshAll();
+    refreshLogLabel();
 }
 
 void ReadinessPanel::onStatusesChanged()

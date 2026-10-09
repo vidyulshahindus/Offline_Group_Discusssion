@@ -4,6 +4,7 @@
 
 enum class EagleMode {
     Doubt,
+    Practice,
 };
 
 enum class SessionLanguage {

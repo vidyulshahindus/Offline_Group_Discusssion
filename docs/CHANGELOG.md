@@ -1,5 +1,15 @@
 # Changelog
 
+## M2 — Speech output (2026-10-09)
+
+- `SentenceStreamer`, `TextPostProcessor`, `HindiFeminineFixer`; unit tests `tst_sentencestreamer`, `tst_textpostprocessor`, `tst_hindifixer`.
+- `TtsEngine` + `PiperCliBackend` + `SpeechQueuePlayer` (`QMediaPlayer` WAV queue); `TurnSpeechController` streams sentences to TTS during LLM generation.
+- Per-turn timestamps (T0…T1) on `TurnMetrics` and F12 overlay; rolling T0→T1 p50/p95.
+- Esc stops LLM + speech; word-budget abort via `SentenceStreamer`.
+- `Paths::whisperModel` fallback model; `resources/data/lang/fillers.json`.
+- Persistent Piper worker per voice (stdin JSON lines, stdout paths); filler PCM cache + `filler_after_ms` playback.
+- Legacy `PiperSpeaker` retained for device UI only.
+
 ## M1 — LLM core (2026-10-08)
 
 ### M1 bugfix — Doubt chat stuck on "…"

@@ -1,0 +1,48 @@
+#pragma once
+
+#include "PromptTypes.h"
+
+#include <QObject>
+#include <QString>
+
+class SentenceStreamer : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit SentenceStreamer(QObject *parent = nullptr);
+
+    void reset(int turnId, EagleMode mode, SessionLanguage language, int wordLimit);
+    void setClockMs(qint64 msSinceT0);
+    void pushToken(const QString &chunk);
+    void finishStream();
+
+    QString buffer() const { return m_buffer; }
+    int emittedWordCount() const { return m_emittedWords; }
+
+signals:
+    void sentenceReady(int turnId, int sentenceIndex, const QString &text);
+    void wordBudgetReached(int turnId);
+    void watchdogFlush(int turnId, const QString &text);
+
+private:
+    QString cleanIncremental(const QString &chunk);
+    void tryEmitSentences(bool endOfStream);
+    void tryEarlyFlush();
+    void tryWatchdogFlush();
+    int countWords(const QString &text) const;
+    bool isAbbreviationDot(const QString &buffer, int dotIndex) const;
+
+    int m_turnId = -1;
+    EagleMode m_mode = EagleMode::Doubt;
+    SessionLanguage m_language = SessionLanguage::English;
+    int m_wordLimit = 75;
+    QString m_buffer;
+    QString m_holdTag;
+    int m_sentenceIndex = 0;
+    int m_emittedWords = 0;
+    bool m_anySentenceEmitted = false;
+    qint64 m_firstTokenClockMs = -1;
+    qint64 m_clockMs = 0;
+    bool m_finished = false;
+};
