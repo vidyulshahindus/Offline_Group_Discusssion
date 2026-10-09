@@ -1,0 +1,155 @@
+{
+  "config_version": 1,
+  "profile": "school",
+  "school": {
+    "name": "Indus International School",
+    "campus": "IISH",
+    "default_programme": "MYP",
+    "avoid_meta_school_words": true,
+    "values": []
+  },
+  "llm": {
+    "backend": "ollama",
+    "base_url": "http://127.0.0.1:11434",
+    "model": "eagle-clm",
+    "fallback_model": "qwen3.5:2b-q4_K_M",
+    "keep_alive": -1,
+    "num_ctx": 4096,
+    "num_thread": 0,
+    "num_batch": 256,
+    "temperature": {
+      "discussion": 0.6,
+      "doubt": 0.4,
+      "concept": 0.6,
+      "steamh": 0.7,
+      "practice": 0.3,
+      "reflection": 0.5,
+      "sel": 0.7,
+      "companion": 0.8,
+      "summary": 0.3,
+      "prep": 0.7
+    },
+    "top_p": 0.9,
+    "top_k": 40,
+    "repeat_penalty": 1.1,
+    "history_budget_tokens": 2200,
+    "history_trim_to_tokens": 1400,
+    "max_new_turn_tokens": 350,
+    "tokens_per_word": {
+      "en": 1.4,
+      "hi": 3.0,
+      "te": 4.0,
+      "ml": 4.5,
+      "mr": 3.2,
+      "default": 3.0
+    },
+    "first_sentence_hint": true,
+    "request_timeout_ms": 60000
+  },
+  "stt": {
+    "server_exe": "",
+    "model": "ggml-small-q5_1.bin",
+    "fallback_model": "ggml-base.bin",
+    "host": "127.0.0.1",
+    "port": 8178,
+    "threads": 0,
+    "language_mode": "auto",
+    "urdu_script_as_hindi": true,
+    "devanagari_lang": "hi",
+    "hinglish_reply": "hindi",
+    "vad": {
+      "frame_ms": 30,
+      "start_threshold_db": 9.0,
+      "end_hangover_ms": 700,
+      "min_segment_ms": 500,
+      "max_segment_ms": 12000,
+      "pre_roll_ms": 200,
+      "tail_keep_ms": 200,
+      "calibration_ms": 300,
+      "noise_alpha": 0.05
+    },
+    "use_unit_terms_as_prompt": true,
+    "bias_terms": [],
+    "hallucinations": [],
+    "request_timeout_ms": 20000,
+    "drain_timeout_ms": 8000,
+    "flush_min_ms": 300,
+    "startup_timeout_ms": 90000,
+    "restart_on_language_change": false,
+    "extra_args": [],
+    "auto_submit_on_silence_ms": 0
+  },
+  "tts": {
+    "backend": "piper_cli",
+    "piper_exe": "",
+    "piper_http_url": "http://127.0.0.1:5050",
+    "voices_dir": "",
+    "voices": {
+      "en": "en_US-lessac-medium",
+      "hi": "hi_IN-priyamvada-medium",
+      "te": "",
+      "ml": "",
+      "mr": ""
+    },
+    "length_scale": {
+      "default": 1.1,
+      "hi": 1.15
+    },
+    "sentence_silence_s": 0.2,
+    "volume": 0.7,
+    "fillers_enabled": true,
+    "filler_after_ms": 3500,
+    "output_device": ""
+  },
+  "audio": {
+    "backend": "mediaplayer",
+    "input_device": "",
+    "push_to_talk": true,
+    "mute_mic_while_speaking": true
+  },
+  "robot": {
+    "enabled": true,
+    "bridge_url": "http://127.0.0.1:9100",
+    "start_bridge": true,
+    "bridge_python": "",
+    "rpi_api_url": "http://localhost:9097/rpi/rpi_api",
+    "rpi_category": "les",
+    "jaw_start_delay_ms": 150,
+    "release_ports_when_idle_s": 0,
+    "simulator": "auto",
+    "cpu_affinity": {
+      "enabled": false,
+      "ollama_cores": "",
+      "piper_cores": ""
+    }
+  },
+  "discussion": {
+    "word_limit": 75,
+    "word_limits_allowed": [50, 60, 75, 90, 100, 125, 150, 175, 200],
+    "follow_up_enabled": false,
+    "follow_up_delay_ms": 3000,
+    "writing_timer_s": 120,
+    "max_viewpoints": 5
+  },
+  "ui": {
+    "fullscreen": true,
+    "kiosk": false,
+    "font_scale": 1.0,
+    "show_subtitles": true,
+    "theme": "light",
+    "admin_pin_hash": ""
+  },
+  "privacy": {
+    "store_transcripts": true,
+    "retention_days": 30,
+    "store_audio": false,
+    "allow_rating": true,
+    "export_anonymised_only": true
+  },
+  "paths": {
+    "tools_dir": "",
+    "data_dir": "",
+    "units_dir": "",
+    "logs_dir": ""
+  }
+}
