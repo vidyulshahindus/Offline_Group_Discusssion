@@ -17,7 +17,7 @@
 #include "ReadinessPanel.h"
 #include "chatbubble.h"
 #include "piperspeaker.h"
-#include "speechinput.h"
+#include "SttEngine.h"
 
 #include <QAction>
 #include <QAudioDevice>
@@ -47,7 +47,7 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
             &MainWindow::onWordBudgetReached);
     connect(m_turnSpeech, &TurnSpeechController::ttsError, this, &MainWindow::onTurnSpeechError);
     connect(m_turnSpeech, &TurnSpeechController::turnIdle, this, &MainWindow::onTurnIdle);
-    m_speech = new SpeechInput(this);
+    m_stt = new SttEngine(m_config, m_paths, m_supervisor, this);
     m_piper = new PiperSpeaker(this);
     wirePaths(paths);
 
@@ -83,6 +83,7 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
     connect(m_chat, &ChatPanel::speakerIndexChanged, this, &MainWindow::onSpeakerSelectionChanged);
     connect(m_chat, &ChatPanel::refreshDevicesRequested, this, &MainWindow::onRefreshMicsClicked);
     connect(m_chat, &ChatPanel::recordToggled, this, &MainWindow::onRecordClicked);
+    connect(m_chat, &ChatPanel::listenToggleRequested, this, &MainWindow::onListenToggle);
 
     if (m_llm.backend) {
         connect(m_llm.backend.get(), &OllamaBackend::token, this, &MainWindow::onLlmToken);
@@ -91,11 +92,18 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
         connect(m_llm.backend.get(), &OllamaBackend::probed, this, &MainWindow::onModelsProbed);
     }
 
-    connect(m_speech, &SpeechInput::recordingChanged, this, &MainWindow::onRecordingChanged);
-    connect(m_speech, &SpeechInput::partialTranscription, this, &MainWindow::onPartialTranscription);
-    connect(m_speech, &SpeechInput::transcriptionReady, this, &MainWindow::onTranscriptionReady);
-    connect(m_speech, &SpeechInput::errorOccurred, this, &MainWindow::onSpeechError);
-    connect(m_speech, &SpeechInput::statusChanged, this, &MainWindow::onSpeechStatus);
+    connect(m_stt, &SttEngine::listeningChanged, this, &MainWindow::onRecordingChanged);
+    connect(m_stt, &SttEngine::partialText, this, &MainWindow::onPartialTranscription);
+    connect(m_stt, &SttEngine::finalText, this, [this](const QString &text, SessionLanguage lang) {
+        onTranscriptionReady(text);
+        const int idx = m_chat->languageCombo()->findData(
+            lang == SessionLanguage::Hindi ? QStringLiteral("hi") : QStringLiteral("en"));
+        if (idx >= 0) {
+            m_chat->languageCombo()->setCurrentIndex(idx);
+        }
+    });
+    connect(m_stt, &SttEngine::errorOccurred, this, &MainWindow::onSpeechError);
+    connect(m_stt, &SttEngine::statusChanged, this, &MainWindow::onSpeechStatus);
     connect(m_piper, &PiperSpeaker::speakingChanged, this, &MainWindow::onPiperSpeakingChanged);
     connect(m_piper, &PiperSpeaker::statusChanged, this, &MainWindow::onPiperStatus);
     connect(m_piper, &PiperSpeaker::errorOccurred, this, &MainWindow::onPiperError);
@@ -123,7 +131,6 @@ EagleMode MainWindow::currentMode() const
 
 void MainWindow::wirePaths(const Paths &paths)
 {
-    m_speech->setWhisperPaths(paths.whisperCli(), paths.whisperModel(m_config.sttModel()));
     m_piper->setPiperPaths(paths.piperExecutable(), paths.piperVoiceOnnx(m_config.ttsVoiceEn()));
 }
 
@@ -286,7 +293,7 @@ void MainWindow::onTurnIdle(int turnId)
 {
     Q_UNUSED(turnId);
     refreshTurnChrome();
-    if (!m_speech->isBusy()) {
+    if (!m_stt->isBusy()) {
         m_chat->statusLabel()->setText(QStringLiteral("Ready"));
     }
 }
@@ -385,23 +392,26 @@ void MainWindow::refreshTurnChrome()
     const bool speechBusy = m_turnSpeech && m_turnSpeech->isSpeechBusy();
     const bool piperLegacyBusy = m_piper->isBusy();
     const bool locked = llmBusy || turnActive;
+    if (m_stt) {
+        m_stt->setPlaybackActive(speechBusy && m_config.audioMuteMicWhileSpeaking());
+    }
 
     m_chat->sendButton()->setDisabled(locked);
     m_chat->modelCombo()->setDisabled(locked);
     m_chat->modeCombo()->setDisabled(locked);
     m_chat->languageCombo()->setDisabled(locked);
     m_chat->wordLimitCombo()->setDisabled(locked);
-    m_chat->recordButton()->setDisabled(locked || m_speech->isBusy());
-    m_chat->micCombo()->setDisabled(locked || m_speech->isRecording());
+    m_chat->recordButton()->setDisabled(locked || m_stt->isBusy());
+    m_chat->micCombo()->setDisabled(locked || m_stt->isListening());
     m_chat->speakerCombo()->setDisabled(locked || piperLegacyBusy);
-    m_chat->refreshMicsButton()->setDisabled(locked || m_speech->isRecording());
+    m_chat->refreshMicsButton()->setDisabled(locked || m_stt->isListening());
     m_chat->stopButton()->setText(QStringLiteral("Stop generating"));
     m_chat->stopButton()->setVisible(llmBusy || turnActive || speechBusy || piperLegacyBusy);
-    if (!m_speech->isBusy() && !turnActive && !speechBusy) {
+    if (!m_stt->isBusy() && !turnActive && !speechBusy) {
         if (llmBusy) {
             m_chat->statusLabel()->setText(QStringLiteral("Generating…"));
         }
-    } else if (turnActive && !llmBusy && !m_speech->isBusy()) {
+    } else if (turnActive && !llmBusy && !m_stt->isBusy()) {
         m_chat->statusLabel()->setText(QStringLiteral("Speaking…"));
     }
 }
@@ -418,7 +428,7 @@ void MainWindow::refreshMicrophones()
     m_chat->micCombo()->blockSignals(true);
     m_chat->micCombo()->clear();
 
-    const QList<QAudioDevice> devices = m_speech->microphones();
+    const QList<QAudioDevice> devices = m_stt->microphones();
     for (const QAudioDevice &device : devices) {
         m_chat->micCombo()->addItem(device.description(), device.id());
     }
@@ -469,10 +479,10 @@ void MainWindow::onMicSelectionChanged(int index)
         return;
     }
     const QByteArray id = m_chat->micCombo()->itemData(index).toByteArray();
-    const QList<QAudioDevice> devices = m_speech->microphones();
+    const QList<QAudioDevice> devices = m_stt->microphones();
     for (const QAudioDevice &device : devices) {
         if (device.id() == id) {
-            m_speech->setMicrophone(device);
+            m_stt->setMicrophone(device);
             return;
         }
     }
@@ -505,18 +515,26 @@ void MainWindow::onRefreshMicsClicked()
 
 void MainWindow::onRecordClicked()
 {
-    if (m_speech->isRecording()) {
-        m_speech->stopRecording();
+    onListenToggle();
+}
+
+void MainWindow::onListenToggle()
+{
+    if (m_stt->isListening()) {
+        m_stt->stopListening();
         return;
     }
     const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
-    if (llmBusy || m_speech->isBusy()) {
-        return;
+    const bool eagleSpeaking =
+        m_turnSpeech && (m_turnSpeech->isTurnActive() || m_turnSpeech->isSpeechBusy());
+    if (llmBusy || eagleSpeaking) {
+        onStopClicked();
     }
     onMicSelectionChanged(m_chat->micCombo()->currentIndex());
-    m_piper->stop();
+    m_stt->setLockedReplyLanguage(currentLanguage());
+    m_stt->setBiasTerms(m_config.sttBiasTerms());
     m_speechPrefix = m_chat->input()->toPlainText().trimmed();
-    m_speech->startRecording();
+    m_stt->startListening();
 }
 
 void MainWindow::showSpeechText(const QString &text)
@@ -543,7 +561,7 @@ void MainWindow::onTranscriptionReady(const QString &text)
 
 void MainWindow::onRecordingChanged(bool recording)
 {
-    m_chat->recordButton()->setText(recording ? QStringLiteral("Stop") : QStringLiteral("Mic"));
+    m_chat->recordButton()->setText(recording ? QStringLiteral("Stop listening") : QStringLiteral("Mic"));
     m_chat->recordButton()->setProperty("recording", recording);
     m_chat->recordButton()->style()->unpolish(m_chat->recordButton());
     m_chat->recordButton()->style()->polish(m_chat->recordButton());
@@ -559,7 +577,7 @@ void MainWindow::onSpeechError(const QString &message)
     m_chat->addMessageBubble(ChatRole::Assistant, message);
     const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
     m_chat->recordButton()->setEnabled(!llmBusy);
-    m_chat->sendButton()->setEnabled(!llmBusy && !m_speech->isRecording());
+    m_chat->sendButton()->setEnabled(!llmBusy && !m_stt->isListening());
 }
 
 void MainWindow::onPiperSpeakingChanged(bool speaking)
@@ -575,7 +593,7 @@ void MainWindow::onPiperSpeakingChanged(bool speaking)
 void MainWindow::onPiperStatus(const QString &status)
 {
     const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
-    if (!llmBusy && !m_speech->isBusy()) {
+    if (!llmBusy && !m_stt->isBusy()) {
         m_chat->statusLabel()->setText(status);
     }
 }
@@ -590,7 +608,7 @@ void MainWindow::onSpeechStatus(const QString &status)
 {
     m_chat->statusLabel()->setText(status);
     const bool llmBusy = m_llm.backend && m_llm.backend->isBusy();
-    const bool locked = status == QStringLiteral("Transcribing…") || m_speech->isRecording() || llmBusy;
+    const bool locked = status == QStringLiteral("Transcribing…") || m_stt->isListening() || llmBusy;
     m_chat->recordButton()->setDisabled(llmBusy || status == QStringLiteral("Transcribing…"));
     m_chat->sendButton()->setDisabled(locked);
 }

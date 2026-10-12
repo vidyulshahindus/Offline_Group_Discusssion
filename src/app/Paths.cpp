@@ -119,11 +119,6 @@ QString Paths::resolveToolsDir() const
 
 QString Paths::whisperCli() const
 {
-    const QString configured = m_config.sttServerExe();
-    if (!configured.isEmpty()) {
-        return QFileInfo(configured).absoluteFilePath();
-    }
-
     const QString cliName = withNativeExeName(QStringLiteral("whisper-cli"));
     const QString tools = m_toolsDir;
     return firstExisting({
@@ -131,6 +126,26 @@ QString Paths::whisperCli() const
         QDir(tools).filePath(QStringLiteral("whisper/") + cliName),
         QDir(tools).filePath(QStringLiteral("whisper/bin/") + cliName),
     });
+}
+
+QString Paths::whisperServerExe() const
+{
+    const QString configured = m_config.sttServerExe();
+    if (!configured.isEmpty() && QFileInfo::exists(configured)) {
+        return QFileInfo(configured).absoluteFilePath();
+    }
+    const QString serverName = withNativeExeName(QStringLiteral("whisper-server"));
+    const QString tools = m_toolsDir;
+    return firstExisting({
+        QDir(tools).filePath(QStringLiteral("whisper/Release/") + serverName),
+        QDir(tools).filePath(QStringLiteral("whisper/") + serverName),
+        QDir(tools).filePath(QStringLiteral("whisper/bin/") + serverName),
+    });
+}
+
+QString Paths::resolvedWhisperModel() const
+{
+    return whisperModel(QString());
 }
 
 QString Paths::whisperModel(const QString &modelFile) const
@@ -203,8 +218,8 @@ void Paths::logResolvedPaths() const
     qCInfo(lcPaths) << "tools_dir:" << m_toolsDir;
     qCInfo(lcPaths) << "data_dir:" << m_dataDir;
     qCInfo(lcPaths) << "logs_dir:" << m_logsDir;
-    qCInfo(lcPaths) << "whisper_cli:" << whisperCli();
-    qCInfo(lcPaths) << "whisper_model:" << whisperModel(m_config.sttModel());
+    qCInfo(lcPaths) << "whisper_server:" << whisperServerExe();
+    qCInfo(lcPaths) << "whisper_model:" << resolvedWhisperModel();
     qCInfo(lcPaths) << "piper_exe:" << piperExecutable();
     qCInfo(lcPaths) << "piper_voice_en:" << piperVoiceOnnx(m_config.ttsVoiceEn());
 }

@@ -14,7 +14,7 @@ class Paths;
 class PiperSpeaker;
 class Paths;
 class ServiceSupervisor;
-class SpeechInput;
+class SttEngine;
 class TurnSpeechController;
 
 class MainWindow : public QMainWindow
@@ -40,6 +40,7 @@ private slots:
     void onSpeakerSelectionChanged(int index);
     void onRefreshMicsClicked();
     void onRecordClicked();
+    void onListenToggle();
     void onRecordingChanged(bool recording);
     void onPartialTranscription(const QString &text);
     void onTranscriptionReady(const QString &text);
@@ -77,7 +78,7 @@ private:
 
     ChatPanel *m_chat = nullptr;
     MetricsOverlay *m_metricsOverlay = nullptr;
-    SpeechInput *m_speech = nullptr;
+    SttEngine *m_stt = nullptr;
     PiperSpeaker *m_piper = nullptr;
     TurnSpeechController *m_turnSpeech = nullptr;
 

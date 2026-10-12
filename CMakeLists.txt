@@ -41,6 +41,16 @@ set(EAGLEGD_CORE_SOURCES
     src/core/TextPostProcessor.cpp
     src/core/SentenceStreamer.cpp
     src/core/TurnSpeechController.cpp
+    src/core/LanguageService.cpp
+)
+
+set(EAGLEGD_STT_SOURCES
+    src/stt/WavUtil.cpp
+    src/stt/PcmTo16kMono.cpp
+    src/stt/Vad.cpp
+    src/stt/AudioCapture.cpp
+    src/stt/WhisperServerClient.cpp
+    src/stt/SttEngine.cpp
 )
 
 set(EAGLEGD_TTS_SOURCES
@@ -52,7 +62,6 @@ set(EAGLEGD_TTS_SOURCES
 
 set(EAGLEGD_PROTOTYPE_SOURCES
     src/chatbubble.cpp
-    src/speechinput.cpp
     src/piperspeaker.cpp
 )
 
@@ -61,12 +70,13 @@ qt_add_executable(EagleGD
     ${EAGLEGD_UI_SOURCES}
     ${EAGLEGD_CORE_SOURCES}
     ${EAGLEGD_TTS_SOURCES}
+    ${EAGLEGD_STT_SOURCES}
     ${EAGLEGD_LLM_SOURCES}
     ${EAGLEGD_PROTOTYPE_SOURCES}
     resources/resources.qrc
 )
 
-target_include_directories(EagleGD PRIVATE src src/app src/ui src/llm src/core src/tts)
+target_include_directories(EagleGD PRIVATE src src/app src/ui src/llm src/core src/tts src/stt)
 
 target_link_libraries(EagleGD PRIVATE Qt6::Widgets Qt6::Network Qt6::Multimedia)
 
@@ -103,7 +113,7 @@ set(EAGLE_TEST_HISTORY_SOURCES
 
 function(eagle_add_unit_test name sources)
     qt_add_executable(${name} tests/unit/${name}.cpp ${sources})
-    target_include_directories(${name} PRIVATE src src/app src/llm src/core src/tts)
+    target_include_directories(${name} PRIVATE src src/app src/llm src/core src/tts src/stt)
     target_link_libraries(${name} PRIVATE ${EAGLE_TEST_LIBS})
     add_test(NAME ${name} COMMAND ${name})
 endfunction()
@@ -133,3 +143,13 @@ eagle_add_unit_test(tst_textpostprocessor "${EAGLE_TEST_TEXTPOST_SOURCES}")
 eagle_add_unit_test(tst_sentencestreamer "${EAGLE_TEST_STREAMER_SOURCES}")
 eagle_add_unit_test(tst_speechqueueplayer src/tts/SpeechQueuePlayer.cpp)
 target_link_libraries(tst_speechqueueplayer PRIVATE Qt6::Multimedia)
+
+eagle_add_unit_test(tst_vad src/stt/Vad.cpp)
+set(EAGLE_TEST_LANG_SOURCES
+    src/core/LanguageService.cpp
+    src/app/AppConfig.cpp
+    src/app/Paths.cpp
+    resources/resources.qrc
+)
+eagle_add_unit_test(tst_languageservice "${EAGLE_TEST_LANG_SOURCES}")
+target_include_directories(tst_languageservice PRIVATE src/app)

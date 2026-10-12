@@ -1,0 +1,6 @@
+{
+  "languages": [
+    {"name": "English", "code": "en", "stt": "en", "script": "Latin", "indian": false, "prompt_language": "English", "voice": "en_US-lessac-medium"},
+    {"name": "Hindi", "code": "hi", "stt": "hi", "script": "Devanagari", "indian": true, "prompt_language": "Hindi in Devanagari script. Mixing a few common English words is fine.", "voice": "hi_IN-priyamvada-medium", "terminal": "।"}
+  ]
+}

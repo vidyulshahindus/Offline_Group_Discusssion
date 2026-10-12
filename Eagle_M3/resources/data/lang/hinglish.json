@@ -1,7 +1,0 @@
-{
-  "hinglish_tokens": ["hai", "hain", "nahi", "nahin", "kya", "kaise", "kyun", "kyon", "mujhe", "humein", "samajh", "samjha", "samjhao", "aap", "tum", "hum", "matlab", "accha", "achha", "acha", "theek", "thik", "bahut", "kuch", "kaun", "kab", "kahan", "bhi", "aur", "lekin", "wala", "wali", "karna", "karte", "karta", "karti", "raha", "rahi", "rahe", "batao", "bataiye", "yaar", "haan", "ji", "hota", "hoti", "hote", "kyunki", "mein", "ka", "ki", "ke", "ko", "se", "par"],
-  "threshold_ratio": 0.25,
-  "min_hits": 2,
-  "min_tokens": 3,
-  "whisper_hallucinations": ["Thank you.", "Thanks for watching!", "Thank you for watching.", "Thanks for watching.", "Subtitles by the Amara.org community", "[Music]", "(upbeat music)", "[BLANK_AUDIO]", "you", "धन्यवाद।"]
-}

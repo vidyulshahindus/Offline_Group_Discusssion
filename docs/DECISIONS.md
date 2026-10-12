@@ -1,5 +1,14 @@
 # Architecture decisions
 
+## M3
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-10-12 | **STT:** `whisper-server.exe` (whisper.cpp prebuilt under `tools/whisper/Release/`) supervised on `127.0.0.1:8178` with `-m <model>`, `-l auto|en|hi`, `-t <threads>`, `--inference-path /inference`. Exe has no PE version string; flags verified via `whisper-server --help` on dev laptop (default CLI port is 8080; Eagle uses config `stt.port` 8178). Transcription is HTTP `POST /inference` multipart (`file` WAV 16 kHz mono, `prompt`, `temperature=0.0`, `response_format=json`). | §10.1; replaces prototype `whisper-cli` per utterance. |
+| 2026-10-12 | **Paths:** `Paths::whisperServerExe()` and `Paths::resolvedWhisperModel()` are the only STT path lookups; Readiness requires both files to exist. Server CWD is the Release folder (DLLs). Process killed on app exit (`aboutToQuit`). Language lock change restarts the server. | Fixes “whisper not found” when running from `build/mingw-release`. |
+| 2026-10-12 | **Pipeline:** `AudioCapture` → `PcmTo16kMono` → `Vad` → `WhisperServerClient` (FIFO, one in flight) via `SttEngine`. Bias prompt = `stt.bias_terms` (≤150 chars) + tail of last segment (≤120 chars). `LanguageService` loads `languages.json` + `hinglish.json` for script/Hinglish reply language. | §10.3–§10.5. |
+| 2026-10-12 | **Listen UX:** Mic / `Space` (when focus is not in the input) toggles listen. Barge-in: Listen stops LLM + `TurnSpeechController` first. `audio.mute_mic_while_speaking` blocks capture while Eagle is speaking. TTS remains `SpeechQueuePlayer`. | §10.3, §19.2. |
+
 ## M2
 
 | Date | Decision | Rationale |

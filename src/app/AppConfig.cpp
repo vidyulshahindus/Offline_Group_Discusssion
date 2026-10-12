@@ -1,6 +1,7 @@
 #include "AppConfig.h"
 
 #include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonValue>
 
@@ -176,6 +177,88 @@ QString AppConfig::sttFallbackModel() const
 {
     return stringAt({QStringLiteral("stt"), QStringLiteral("fallback_model")},
                     QStringLiteral("ggml-base.bin"));
+}
+
+QString AppConfig::sttHost() const
+{
+    return stringAt({QStringLiteral("stt"), QStringLiteral("host")}, QStringLiteral("127.0.0.1"));
+}
+
+int AppConfig::sttPort() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("port")}, 8178);
+}
+
+int AppConfig::sttThreads() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("threads")}, 0);
+}
+
+QString AppConfig::sttLanguageMode() const
+{
+    return stringAt({QStringLiteral("stt"), QStringLiteral("language_mode")}, QStringLiteral("auto"));
+}
+
+bool AppConfig::sttUrduScriptAsHindi() const
+{
+    return valueAt(m_document, {QStringLiteral("stt"), QStringLiteral("urdu_script_as_hindi")})
+        .toBool(true);
+}
+
+QString AppConfig::sttDevanagariLang() const
+{
+    return stringAt({QStringLiteral("stt"), QStringLiteral("devanagari_lang")}, QStringLiteral("hi"));
+}
+
+QStringList AppConfig::sttBiasTerms() const
+{
+    QStringList out;
+    const QJsonArray arr =
+        valueAt(m_document, {QStringLiteral("stt"), QStringLiteral("bias_terms")}).toArray();
+    for (const QJsonValue &v : arr) {
+        out.append(v.toString());
+    }
+    return out;
+}
+
+int AppConfig::sttVadFrameMs() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("vad"), QStringLiteral("frame_ms")}, 30);
+}
+
+double AppConfig::sttVadStartThresholdDb() const
+{
+    return doubleAt({QStringLiteral("stt"), QStringLiteral("vad"), QStringLiteral("start_threshold_db")},
+                    9.0);
+}
+
+int AppConfig::sttVadEndHangoverMs() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("vad"), QStringLiteral("end_hangover_ms")},
+                 700);
+}
+
+int AppConfig::sttVadMinSegmentMs() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("vad"), QStringLiteral("min_segment_ms")},
+                 500);
+}
+
+int AppConfig::sttVadMaxSegmentMs() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("vad"), QStringLiteral("max_segment_ms")},
+                 12000);
+}
+
+int AppConfig::sttVadPreRollMs() const
+{
+    return intAt({QStringLiteral("stt"), QStringLiteral("vad"), QStringLiteral("pre_roll_ms")}, 200);
+}
+
+bool AppConfig::audioMuteMicWhileSpeaking() const
+{
+    return valueAt(m_document, {QStringLiteral("audio"), QStringLiteral("mute_mic_while_speaking")})
+        .toBool(true);
 }
 
 QString AppConfig::ttsPiperExe() const

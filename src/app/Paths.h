@@ -18,7 +18,9 @@ public:
     QString configFilePath() const;
 
     QString whisperCli() const;
+    QString whisperServerExe() const;
     QString whisperModel(const QString &modelFile) const;
+    QString resolvedWhisperModel() const;
     QString piperExecutable() const;
     QString piperVoicesDir() const;
     QString piperVoiceOnnx(const QString &voiceId) const;

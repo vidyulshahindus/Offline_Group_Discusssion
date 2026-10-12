@@ -64,7 +64,17 @@
       "pre_roll_ms": 200
     },
     "use_unit_terms_as_prompt": true,
-    "auto_submit_on_silence_ms": 0
+    "auto_submit_on_silence_ms": 0,
+    "devanagari_lang": "hi",
+    "bias_terms": [
+      "collaboration",
+      "concept",
+      "discussion",
+      "MYP",
+      "IB",
+      "photosynthesis",
+      "Alauddin Khilji"
+    ]
   },
   "tts": {
     "backend": "piper_cli",

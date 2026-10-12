@@ -1,5 +1,14 @@
 # Changelog
 
+## M3 — Speech input (2026-10-12)
+
+- `AudioCapture`, `PcmTo16kMono`, `Vad`, `WhisperServerClient`, `SttEngine`; `LanguageService` with `languages.json` and `hinglish.json`.
+- `ServiceSupervisor` starts/stops `whisper-server` on `stt.host`/`stt.port`, restarts on language change, health via `GET /health`.
+- `Paths::whisperServerExe()` + `resolvedWhisperModel()`; Readiness checks executable and model file.
+- Replaced prototype `SpeechInput` / `whisper-cli` with incremental segment transcription; editable live transcript; bias terms in config.
+- Barge-in on Listen; mic muted while Eagle speaks (`SpeechQueuePlayer` unchanged).
+- Unit tests: `tst_vad`, `tst_languageservice`.
+
 ## M2 — Speech output (2026-10-09)
 
 - `SentenceStreamer`, `TextPostProcessor`, `HindiFeminineFixer`; unit tests `tst_sentencestreamer`, `tst_textpostprocessor`, `tst_hindifixer`.

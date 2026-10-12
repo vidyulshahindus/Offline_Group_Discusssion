@@ -14,6 +14,7 @@
 #include "ReadinessPanel.h"
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QCommandLineParser>
 #include <QDir>
 #include <QFile>
@@ -80,8 +81,10 @@ bool Application::initialize()
     EagleLog::install(m_paths->logsDir());
     m_paths->logResolvedPaths();
 
-    m_supervisor = std::make_unique<ServiceSupervisor>(*m_config);
+    m_supervisor = std::make_unique<ServiceSupervisor>(*m_config, *m_paths);
     m_supervisor->refreshAll();
+    QObject::connect(qApp, &QCoreApplication::aboutToQuit, m_supervisor.get(),
+                     &ServiceSupervisor::stopWhisperServer);
 
     m_llm = std::make_unique<LlmServices>();
     QStringList llmErrors;

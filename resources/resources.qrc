@@ -5,6 +5,8 @@
     </qresource>
     <qresource prefix="/data/lang">
         <file>data/lang/fillers.json</file>
+        <file>data/lang/hinglish.json</file>
+        <file>data/lang/languages.json</file>
     </qresource>
     <qresource prefix="/prompts">
         <file alias="tail.txt">prompts/tail.txt</file>

@@ -50,6 +50,7 @@ signals:
     void speakerIndexChanged(int index);
     void refreshDevicesRequested();
     void recordToggled();
+    void listenToggleRequested();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

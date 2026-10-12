@@ -128,6 +128,7 @@ ChatPanel::ChatPanel(QWidget *parent)
     m_input->setFixedHeight(52);
     m_input->setTabChangesFocus(false);
     m_input->installEventFilter(this);
+    installEventFilter(this);
 
     m_sendButton = new QPushButton(QStringLiteral("↑"), inputBar);
     m_sendButton->setObjectName(QStringLiteral("sendButton"));
@@ -156,6 +157,13 @@ ChatPanel::ChatPanel(QWidget *parent)
 
 bool ChatPanel::eventFilter(QObject *watched, QEvent *event)
 {
+    if (event->type() == QEvent::KeyPress) {
+        auto *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Space && watched != m_input) {
+            emit listenToggleRequested();
+            return true;
+        }
+    }
     if (watched == m_input && event->type() == QEvent::KeyPress) {
         auto *keyEvent = static_cast<QKeyEvent *>(event);
         if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
