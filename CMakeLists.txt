@@ -44,6 +44,7 @@ set(EAGLEGD_CURRICULUM_SOURCES
     src/curriculum/UnitLibrary.cpp
     src/curriculum/UnitContextBuilder.cpp
     src/curriculum/CurriculumController.cpp
+    src/curriculum/Retriever.cpp
 )
 
 set(EAGLEGD_CORE_SOURCES
@@ -184,3 +185,12 @@ set(EAGLE_TEST_UNITPACK_SOURCES
 )
 eagle_add_unit_test(tst_unitpack "${EAGLE_TEST_UNITPACK_SOURCES}")
 target_include_directories(tst_unitpack PRIVATE src/curriculum)
+
+set(EAGLE_TEST_RETRIEVER_SOURCES
+    src/curriculum/Retriever.cpp
+    src/curriculum/UnitPack.cpp
+    src/curriculum/JsonResource.cpp
+    resources/resources.qrc
+)
+eagle_add_unit_test(tst_retriever "${EAGLE_TEST_RETRIEVER_SOURCES}")
+target_include_directories(tst_retriever PRIVATE src/curriculum)

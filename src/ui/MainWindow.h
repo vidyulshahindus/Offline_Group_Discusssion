@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PromptTypes.h"
+#include "Retriever.h"
 #include "llm/ILlmBackend.h"
 
 #include <QElapsedTimer>
@@ -80,6 +81,7 @@ private:
     void refreshContextLine();
     void resetChatForNewUnit(const QString &unitTitle);
     void applySttBiasFromUnit();
+    void rebuildRetrieverIndex();
     bool sendTurnIfReady();
     SessionLanguage currentLanguage() const;
     EagleMode currentMode() const;
@@ -107,4 +109,5 @@ private:
     LlmMetrics m_pendingLlmMetrics;
     bool m_pendingTurnOpen = false;
     bool m_retrySendAfterWarm = false;
+    Retriever m_retriever;
 };

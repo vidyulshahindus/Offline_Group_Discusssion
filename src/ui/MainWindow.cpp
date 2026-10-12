@@ -19,6 +19,7 @@
 #include "piperspeaker.h"
 #include "SttEngine.h"
 #include "CurriculumController.h"
+#include "Retriever.h"
 #include "UnitContextBuilder.h"
 #include "UnitPack.h"
 
@@ -108,6 +109,7 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
         m_curriculum->restoreSettings();
         populateCurriculumUi();
         m_unitContext = m_curriculum->currentContext();
+        rebuildRetrieverIndex();
         refreshContextLine();
     } else {
         m_unitContext = UnitContextBuilder::none();
@@ -270,6 +272,7 @@ bool MainWindow::sendTurnIfReady()
     inputs.language = currentLanguage();
     inputs.wordLimit = m_chat->currentWordLimit();
     inputs.question = text;
+    inputs.notes = m_retriever.notesForTurn(text);
 
     m_lastUserTurnMessage = m_llm.prompts->buildUserTurn(inputs, m_unitContext);
     const QVector<LlmMessage> messages =
@@ -777,6 +780,27 @@ void MainWindow::resetChatForNewUnit(const QString &unitTitle)
     m_chat->statusLabel()->setText(QStringLiteral("Ready"));
 }
 
+void MainWindow::rebuildRetrieverIndex()
+{
+    if (!m_curriculum || !m_unitContext.hasUnit) {
+        m_retriever = Retriever();
+        return;
+    }
+    const UnitPack pack = m_curriculum->library().packById(m_unitContext.packId);
+    if (pack.id().isEmpty()) {
+        m_retriever = Retriever();
+        return;
+    }
+    int topicIndex = 0;
+    for (int i = 0; i < pack.topicCount(); ++i) {
+        if (pack.topicId(i) == m_unitContext.topicId) {
+            topicIndex = i;
+            break;
+        }
+    }
+    m_retriever.buildFromUnit(pack, topicIndex);
+}
+
 void MainWindow::applySttBiasFromUnit()
 {
     QStringList terms = m_config.sttBiasTerms();
@@ -836,6 +860,7 @@ void MainWindow::onCurriculumContextChanged(const UnitContext &context, bool uni
 {
     m_unitContext = context;
     applySttBiasFromUnit();
+    rebuildRetrieverIndex();
     refreshContextLine();
     if (unitOrTopicChanged) {
         const QString title =
