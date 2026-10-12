@@ -423,6 +423,7 @@ void OllamaBackend::parseStreamLine(const QByteArray &line)
         metrics.loadNs = obj.value(QStringLiteral("load_duration")).toInteger();
         metrics.totalNs = obj.value(QStringLiteral("total_duration")).toInteger();
         metrics.msToFirstToken = m_firstTokenMs;
+        metrics.doneReason = obj.value(QStringLiteral("done_reason")).toString();
         m_overallTimer->stop();
         m_streamCompleted = true;
 

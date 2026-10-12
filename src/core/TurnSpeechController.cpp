@@ -124,7 +124,7 @@ void TurnSpeechController::beginTurn(int turnId, EagleMode mode, SessionLanguage
     m_timestamps = TurnTimestamps{};
     m_turnClock.start();
     m_timestamps.t0Ms = 0;
-    m_streamer.reset(turnId, mode, language, wordLimit);
+    m_streamer.reset(turnId, mode, language, wordLimit, m_config.discussionWordLimitOverflow());
     m_fillerTimer.stop();
     if (m_config.ttsFillersEnabled() && mode != EagleMode::Practice && m_speechEnabled) {
         m_fillerTimer.start(m_config.ttsFillerAfterMs());
@@ -150,11 +150,16 @@ void TurnSpeechController::onLlmToken(const QString &token)
     m_streamer.pushToken(token);
 }
 
-void TurnSpeechController::onLlmFinished()
+void TurnSpeechController::onLlmFinished(bool hitTokenLimit)
 {
     m_timestamps.llmDoneMs = m_turnClock.elapsed();
-    m_streamer.finishStream();
+    m_streamer.finishStream(hitTokenLimit);
     tryCompleteTurn();
+}
+
+QString TurnSpeechController::spokenAssistantText() const
+{
+    return m_streamer.spokenText();
 }
 
 void TurnSpeechController::stop()

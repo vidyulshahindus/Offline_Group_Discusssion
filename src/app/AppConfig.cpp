@@ -419,3 +419,8 @@ double AppConfig::llmTemperatureFor(const QString &modeKey) const
         valueAt(m_document, {QStringLiteral("llm"), QStringLiteral("temperature")}).toObject();
     return temps.value(modeKey).toDouble(0.6);
 }
+
+double AppConfig::discussionWordLimitOverflow() const
+{
+    return doubleAt({QStringLiteral("discussion"), QStringLiteral("word_limit_overflow")}, 0.5);
+}

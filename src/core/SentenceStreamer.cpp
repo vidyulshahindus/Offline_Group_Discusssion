@@ -33,20 +33,30 @@ SentenceStreamer::SentenceStreamer(QObject *parent)
 {
 }
 
-void SentenceStreamer::reset(int turnId, EagleMode mode, SessionLanguage language, int wordLimit)
+void SentenceStreamer::reset(int turnId, EagleMode mode, SessionLanguage language, int wordLimit,
+                             double overflowRatio)
 {
     m_turnId = turnId;
     m_mode = mode;
     m_language = language;
     m_wordLimit = wordLimit;
+    m_overflowRatio = overflowRatio;
+    m_hardWordCap = static_cast<int>(wordLimit * (1.0 + overflowRatio));
     m_buffer.clear();
     m_holdTag.clear();
     m_sentenceIndex = 0;
     m_emittedWords = 0;
     m_anySentenceEmitted = false;
+    m_budgetStopped = false;
+    m_spokenSentences.clear();
     m_firstTokenClockMs = -1;
     m_clockMs = 0;
     m_finished = false;
+}
+
+QString SentenceStreamer::spokenText() const
+{
+    return m_spokenSentences.join(QStringLiteral(" "));
 }
 
 void SentenceStreamer::setClockMs(qint64 msSinceT0)
@@ -56,7 +66,7 @@ void SentenceStreamer::setClockMs(qint64 msSinceT0)
 
 void SentenceStreamer::pushToken(const QString &chunk)
 {
-    if (m_finished || chunk.isEmpty()) {
+    if (m_finished || m_budgetStopped || chunk.isEmpty()) {
         return;
     }
     if (m_firstTokenClockMs < 0) {
@@ -64,24 +74,31 @@ void SentenceStreamer::pushToken(const QString &chunk)
     }
     m_buffer.append(cleanIncremental(chunk));
     tryEarlyFlush();
-    tryEmitSentences(false);
+    tryEmitSentences();
     tryWatchdogFlush();
 }
 
-void SentenceStreamer::finishStream()
+void SentenceStreamer::finishStream(bool hitTokenLimit)
 {
     if (m_finished) {
         return;
     }
     m_finished = true;
-    tryEmitSentences(true);
-    if (!m_buffer.trimmed().isEmpty()) {
-        const int words = countWords(m_buffer);
-        if (words >= 2) {
-            emit sentenceReady(m_turnId, m_sentenceIndex++, m_buffer.trimmed());
-            m_emittedWords += words;
+    tryEmitSentences();
+    const QString tail = m_buffer.trimmed();
+    m_buffer.clear();
+    if (tail.isEmpty() || m_budgetStopped) {
+        return;
+    }
+    if (hitTokenLimit && !endsWithTerminal(tail)) {
+        return;
+    }
+    const int words = countWords(tail);
+    if (words >= 2 && m_emittedWords < m_wordLimit) {
+        emitSentence(tail);
+        if (m_emittedWords >= m_wordLimit) {
+            stopAfterBudget();
         }
-        m_buffer.clear();
     }
 }
 
@@ -120,7 +137,7 @@ QString SentenceStreamer::cleanIncremental(const QString &chunk)
 
 void SentenceStreamer::tryEarlyFlush()
 {
-    if (m_anySentenceEmitted || m_wordLimit <= 0) {
+    if (m_anySentenceEmitted || m_wordLimit <= 0 || m_budgetStopped) {
         return;
     }
     if (m_firstTokenClockMs < 0 || m_clockMs - m_firstTokenClockMs < 1200) {
@@ -145,13 +162,17 @@ void SentenceStreamer::tryEarlyFlush()
     if (!processed.dropped && !processed.text.isEmpty()) {
         m_anySentenceEmitted = true;
         m_emittedWords += countWords(processed.text);
+        m_spokenSentences.append(processed.text);
         emit sentenceReady(m_turnId, m_sentenceIndex++, processed.text);
+        if (m_emittedWords >= m_wordLimit) {
+            stopAfterBudget();
+        }
     }
 }
 
 void SentenceStreamer::tryWatchdogFlush()
 {
-    if (m_anySentenceEmitted || m_clockMs < 8500) {
+    if (m_anySentenceEmitted || m_clockMs < 8500 || m_budgetStopped) {
         return;
     }
     if (countWords(m_buffer) < 6) {
@@ -164,7 +185,11 @@ void SentenceStreamer::tryWatchdogFlush()
     const auto processed = TextPostProcessor::processSentence(chunk, m_mode, m_language);
     if (!processed.dropped && !processed.text.isEmpty()) {
         m_emittedWords += countWords(processed.text);
+        m_spokenSentences.append(processed.text);
         emit sentenceReady(m_turnId, m_sentenceIndex++, processed.text);
+        if (m_emittedWords >= m_wordLimit) {
+            stopAfterBudget();
+        }
     }
 }
 
@@ -189,11 +214,74 @@ bool SentenceStreamer::isAbbreviationDot(const QString &buffer, int dotIndex) co
     return false;
 }
 
-void SentenceStreamer::tryEmitSentences(bool endOfStream)
+void SentenceStreamer::emitSentence(const QString &sentence)
 {
-    Q_UNUSED(endOfStream);
+    const auto processed = TextPostProcessor::processSentence(sentence, m_mode, m_language);
+    if (processed.dropped || processed.text.isEmpty()) {
+        return;
+    }
+    m_anySentenceEmitted = true;
+    m_emittedWords += countWords(processed.text);
+    m_spokenSentences.append(processed.text);
+    emit sentenceReady(m_turnId, m_sentenceIndex++, processed.text);
+}
+
+void SentenceStreamer::stopAfterBudget()
+{
+    if (m_budgetStopped) {
+        return;
+    }
+    m_budgetStopped = true;
+    m_buffer.clear();
+    m_finished = true;
+    emit wordBudgetReached(m_turnId);
+}
+
+QString SentenceStreamer::trimRunOnToWordCap(const QString &sentence, int maxWords) const
+{
+    if (maxWords <= 0) {
+        return {};
+    }
+    const QStringList words =
+        sentence.split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
+    if (words.size() <= maxWords) {
+        return sentence.trimmed();
+    }
+    QString subset = words.mid(0, maxWords).join(QLatin1Char(' '));
+    static const QRegularExpression clauseBreak(QStringLiteral("[,;:\u2013\u2014\u2012\u2014]"));
+    int bestBreak = -1;
+    QRegularExpressionMatchIterator it = clauseBreak.globalMatch(subset);
+    while (it.hasNext()) {
+        bestBreak = it.next().capturedStart();
+    }
+    QString trimmed;
+    if (bestBreak >= 0) {
+        trimmed = subset.left(bestBreak + 1).trimmed();
+    } else {
+        trimmed = subset.trimmed();
+    }
+    if (trimmed.isEmpty()) {
+        return {};
+    }
+    if (!endsWithTerminal(trimmed)) {
+        trimmed.append(m_language == SessionLanguage::Hindi ? QStringLiteral("।")
+                                                            : QStringLiteral("."));
+    }
+    return trimmed;
+}
+
+void SentenceStreamer::tryEmitSentences()
+{
+    if (m_budgetStopped) {
+        m_buffer.clear();
+        return;
+    }
     int scan = 0;
     while (scan < m_buffer.size()) {
+        if (m_emittedWords >= m_wordLimit) {
+            m_buffer.clear();
+            return;
+        }
         int boundary = -1;
         QString punct;
         for (const QString &p : kTerminalPunct) {
@@ -225,23 +313,21 @@ void SentenceStreamer::tryEmitSentences(bool endOfStream)
             m_buffer = sentence + QLatin1Char(' ') + m_buffer;
             break;
         }
+
+        const int roomToCap = m_hardWordCap - m_emittedWords;
         const int sentenceWords = countWords(sentence);
-        if (m_emittedWords + sentenceWords > m_wordLimit) {
-            if (m_emittedWords >= static_cast<int>(m_wordLimit * 0.6)) {
-                emit wordBudgetReached(m_turnId);
-                m_finished = true;
+        if (sentenceWords > roomToCap) {
+            sentence = trimRunOnToWordCap(sentence, roomToCap);
+            if (sentence.isEmpty()) {
+                stopAfterBudget();
                 return;
             }
-            emit wordBudgetReached(m_turnId);
-            m_finished = true;
-            return;
         }
-        const auto processed =
-            TextPostProcessor::processSentence(sentence, m_mode, m_language);
-        if (!processed.dropped && !processed.text.isEmpty()) {
-            m_anySentenceEmitted = true;
-            m_emittedWords += countWords(processed.text);
-            emit sentenceReady(m_turnId, m_sentenceIndex++, processed.text);
+
+        emitSentence(sentence);
+        if (m_emittedWords >= m_wordLimit) {
+            stopAfterBudget();
+            return;
         }
     }
 }

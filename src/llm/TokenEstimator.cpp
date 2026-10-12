@@ -57,7 +57,9 @@ double TokenEstimator::tokensPerWord(SessionLanguage language) const
 
 int TokenEstimator::numPredictForWordLimit(int wordLimit, SessionLanguage language) const
 {
-    const double raw = wordLimit * tokensPerWord(language) * 1.25 + 24.0;
+    const double overflow = m_config.discussionWordLimitOverflow();
+    const double wordCap = wordLimit * (1.0 + overflow);
+    const double raw = wordCap * tokensPerWord(language) * 1.25 + 24.0;
     return qMin(600, qMax(32, static_cast<int>(qCeil(raw))));
 }
 

@@ -25,8 +25,9 @@ public:
     void markPromptBuilt();
     void markRequestSent();
     void onLlmToken(const QString &token);
-    void onLlmFinished();
+    void onLlmFinished(bool hitTokenLimit = false);
     void stop();
+    QString spokenAssistantText() const;
 
     void setOutputDevice(const QAudioDevice &device);
     void playReadinessVoiceTest();

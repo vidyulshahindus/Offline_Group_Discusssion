@@ -69,6 +69,7 @@ public:
     int llmTopK() const;
     double llmRepeatPenalty() const;
     double llmTemperatureFor(const QString &modeKey) const;
+    double discussionWordLimitOverflow() const;
 
     static QJsonObject defaultDocument();
 

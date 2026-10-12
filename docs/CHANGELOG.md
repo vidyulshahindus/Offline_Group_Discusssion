@@ -2,6 +2,7 @@
 
 ## M3 — Speech input (2026-10-12)
 
+- **Word limit:** Soft spoken limit — complete sentences only; optional overflow cap (`discussion.word_limit_overflow`, default 0.5); assistant bubble and history match spoken text; no TTS for token-truncated fragments.
 - `AudioCapture`, `PcmTo16kMono`, `Vad`, `WhisperServerClient`, `SttEngine`; `LanguageService` with `languages.json` and `hinglish.json`.
 - `ServiceSupervisor` starts/stops `whisper-server` on `stt.host`/`stt.port`, restarts on language change, health via `GET /health`.
 - `Paths::whisperServerExe()` + `resolvedWhisperModel()`; Readiness checks executable and model file.

@@ -276,8 +276,13 @@ void MainWindow::onLlmToken(int turnId, const QString &text)
 
 void MainWindow::onLlmFinished(int turnId, const QString &fullText, const LlmMetrics &metrics)
 {
-    m_turnSpeech->onLlmFinished();
-    const QString spoken = ChatBubble::spokenText(fullText);
+    Q_UNUSED(fullText);
+    const bool hitTokenLimit = metrics.doneReason == QLatin1String("length");
+    m_turnSpeech->onLlmFinished(hitTokenLimit);
+    const QString spoken = m_turnSpeech->spokenAssistantText();
+    if (m_chat->activeAssistantBubble()) {
+        m_chat->activeAssistantBubble()->setText(spoken);
+    }
     const QVector<LlmMessage> historyBeforeAppend = m_llm.history->messages();
     m_llm.history->appendTurn(m_lastUserTurnMessage, spoken, currentLanguage());
     m_pendingLlmMetrics = metrics;

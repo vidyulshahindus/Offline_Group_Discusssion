@@ -20,6 +20,7 @@ struct LlmMetrics {
     qint64 loadNs = 0;
     qint64 totalNs = 0;
     qint64 msToFirstToken = -1;
+    QString doneReason;
 
     qint64 promptEvalNewCount() const
     {
