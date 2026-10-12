@@ -2,14 +2,12 @@
 
 #include "WavUtil.h"
 
+#include <QDateTime>
 #include <QHttpMultiPart>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QLoggingCategory>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
-
-Q_LOGGING_CATEGORY(lcWhisperClient, "eagle.whisper.client")
 
 WhisperServerClient::WhisperServerClient(QObject *parent)
     : QObject(parent)
@@ -27,12 +25,19 @@ void WhisperServerClient::setHallucinationFilter(const QStringList &phrases)
     m_hallucinations = phrases;
 }
 
-void WhisperServerClient::enqueue(const QByteArray &pcm16k, const QString &prompt)
+void WhisperServerClient::enqueue(const QByteArray &pcm16k, const QString &prompt,
+                                  qint64 segmentStartMs, qint64 segmentEndMs, bool fallbackPass)
 {
     if (pcm16k.size() < 8000) {
         return;
     }
-    m_queue.enqueue({pcm16k, prompt});
+    Job job;
+    job.pcm = pcm16k;
+    job.prompt = prompt;
+    job.segmentStartMs = segmentStartMs;
+    job.segmentEndMs = segmentEndMs;
+    job.fallbackPass = fallbackPass;
+    m_queue.enqueue(job);
     pump();
 }
 
@@ -50,14 +55,15 @@ void WhisperServerClient::pump()
     if (m_inFlight || m_queue.isEmpty() || !m_baseUrl.isValid()) {
         return;
     }
-    const Job job = m_queue.dequeue();
+    m_inFlightJob = m_queue.dequeue();
+    m_inFlightJob.sentAtMs = QDateTime::currentMSecsSinceEpoch();
     m_inFlight = true;
 
     auto *filePart = new QHttpPart;
     filePart->setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("audio/wav"));
     filePart->setHeader(QNetworkRequest::ContentDispositionHeader,
                         QStringLiteral("form-data; name=\"file\"; filename=\"segment.wav\""));
-    filePart->setBody(WavUtil::pcm16kMonoToWav(job.pcm));
+    filePart->setBody(WavUtil::pcm16kMonoToWav(m_inFlightJob.pcm));
 
     auto *tempPart = new QHttpPart;
     tempPart->setHeader(QNetworkRequest::ContentDispositionHeader,
@@ -77,7 +83,7 @@ void WhisperServerClient::pump()
     auto *promptPart = new QHttpPart;
     promptPart->setHeader(QNetworkRequest::ContentDispositionHeader,
                           QStringLiteral("form-data; name=\"prompt\""));
-    promptPart->setBody(job.prompt.toUtf8());
+    promptPart->setBody(m_inFlightJob.prompt.toUtf8());
 
     auto *multi = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     multi->append(*filePart);
@@ -106,6 +112,7 @@ void WhisperServerClient::onFinished()
         return;
     }
     reply->deleteLater();
+    const qint64 replyMs = QDateTime::currentMSecsSinceEpoch() - m_inFlightJob.sentAtMs;
     m_inFlight = false;
 
     QString error;
@@ -117,8 +124,10 @@ void WhisperServerClient::onFinished()
         text = filterText(text, m_hallucinations);
     }
 
+    emit inferenceFinished(m_inFlightJob.segmentStartMs, m_inFlightJob.segmentEndMs, replyMs,
+                           text.size(), error, m_inFlightJob.fallbackPass);
+
     if (!error.isEmpty()) {
-        qCWarning(lcWhisperClient) << error;
         emit errorOccurred(error);
     } else if (!text.isEmpty()) {
         emit segmentText(text);

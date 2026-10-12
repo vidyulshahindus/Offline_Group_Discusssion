@@ -30,6 +30,32 @@ void AudioCapture::setMicrophone(const QAudioDevice &device)
     }
 }
 
+QString AudioCapture::sampleFormatName(QAudioFormat::SampleFormat fmt)
+{
+    switch (fmt) {
+    case QAudioFormat::UInt8:
+        return QStringLiteral("UInt8");
+    case QAudioFormat::Int16:
+        return QStringLiteral("Int16");
+    case QAudioFormat::Int32:
+        return QStringLiteral("Int32");
+    case QAudioFormat::Float:
+        return QStringLiteral("Float");
+    default:
+        return QStringLiteral("Unknown");
+    }
+}
+
+QAudio::State AudioCapture::sourceState() const
+{
+    return m_source ? m_source->state() : QAudio::StoppedState;
+}
+
+QAudio::Error AudioCapture::sourceError() const
+{
+    return m_source ? m_source->error() : QAudio::NoError;
+}
+
 void AudioCapture::start()
 {
     if (m_capturing) {
@@ -44,16 +70,19 @@ void AudioCapture::start()
     preferred.setSampleRate(16000);
     preferred.setChannelCount(1);
     preferred.setSampleFormat(QAudioFormat::Int16);
-    const QAudioFormat format =
+    m_inputFormat =
         m_device.isFormatSupported(preferred) ? preferred : m_device.preferredFormat();
-    m_converter.setInputFormat(format);
+    m_converter.setInputFormat(m_inputFormat);
 
-    m_source = new QAudioSource(m_device, format, this);
+    m_source = new QAudioSource(m_device, m_inputFormat, this);
     m_capture = m_source->start();
     if (!m_capture) {
+        const QString err = m_source->error() == QAudio::NoError
+                                ? QStringLiteral("start() returned null IO device")
+                                : QString::number(int(m_source->error()));
         m_source->deleteLater();
         m_source = nullptr;
-        emit errorOccurred(QStringLiteral("Could not open the selected microphone."));
+        emit errorOccurred(QStringLiteral("Could not open the selected microphone: %1").arg(err));
         return;
     }
     connect(m_capture, &QIODevice::readyRead, this, &AudioCapture::onAudioReady);

@@ -7,6 +7,7 @@
 
 class QComboBox;
 class QLabel;
+class QProgressBar;
 class QPushButton;
 class QScrollArea;
 class QTextEdit;
@@ -42,6 +43,9 @@ public:
     ChatBubble *activeAssistantBubble() const { return m_activeAssistantBubble; }
     QString streamBuffer() const { return m_streamBuffer; }
     void clearStreamBuffer() { m_streamBuffer.clear(); }
+    void setMicLevelVisible(bool visible);
+    void setMicInputLevel(float normalized);
+
 signals:
     void sendRequested();
     void newChatRequested();
@@ -72,6 +76,7 @@ private:
     QPushButton *m_listenButton = nullptr;
     QPushButton *m_recordButton = nullptr;
     QPushButton *m_refreshMicsButton = nullptr;
+    QProgressBar *m_micLevelBar = nullptr;
 
     ChatBubble *m_activeAssistantBubble = nullptr;
     QString m_streamBuffer;

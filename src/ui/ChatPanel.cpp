@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
@@ -122,6 +123,14 @@ ChatPanel::ChatPanel(QWidget *parent)
     m_recordButton->setToolTip(QStringLiteral("Start or stop voice input"));
     connect(m_recordButton, &QPushButton::clicked, this, &ChatPanel::recordToggled);
 
+    m_micLevelBar = new QProgressBar(inputBar);
+    m_micLevelBar->setObjectName(QStringLiteral("micLevelBar"));
+    m_micLevelBar->setFixedSize(56, 12);
+    m_micLevelBar->setRange(0, 100);
+    m_micLevelBar->setTextVisible(false);
+    m_micLevelBar->setVisible(false);
+    m_micLevelBar->setToolTip(QStringLiteral("Microphone input level"));
+
     m_input = new QTextEdit(inputBar);
     m_input->setObjectName(QStringLiteral("messageInput"));
     m_input->setPlaceholderText(QStringLiteral("Ask Eagle…  (Enter to send, Shift+Enter for new line, Mic for voice)"));
@@ -139,6 +148,7 @@ ChatPanel::ChatPanel(QWidget *parent)
     inputRow->addWidget(m_speakerCombo, 0, Qt::AlignBottom);
     inputRow->addWidget(m_refreshMicsButton, 0, Qt::AlignBottom);
     inputRow->addWidget(m_recordButton, 0, Qt::AlignBottom);
+    inputRow->addWidget(m_micLevelBar, 0, Qt::AlignBottom);
     inputRow->addWidget(m_input, 1);
     inputRow->addWidget(m_sendButton, 0, Qt::AlignBottom);
 
@@ -221,6 +231,23 @@ void ChatPanel::appendAssistantStream(const QString &text)
     if (m_activeAssistantBubble) {
         m_activeAssistantBubble->appendText(text);
         scrollToBottom();
+    }
+}
+
+void ChatPanel::setMicLevelVisible(bool visible)
+{
+    if (m_micLevelBar) {
+        m_micLevelBar->setVisible(visible);
+        if (!visible) {
+            m_micLevelBar->setValue(0);
+        }
+    }
+}
+
+void ChatPanel::setMicInputLevel(float normalized)
+{
+    if (m_micLevelBar && m_micLevelBar->isVisible()) {
+        m_micLevelBar->setValue(int(qBound(0.0f, normalized, 1.0f) * 100.0f));
     }
 }
 

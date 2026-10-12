@@ -34,6 +34,7 @@ public:
 
     bool isTurnActive() const { return m_turnActive; }
     bool isSpeechBusy() const;
+    bool isAudioPlaybackBusy() const;
 
     const TurnTimestamps &timestamps() const { return m_timestamps; }
     qint64 turnFirstSynthMs() const { return m_turnFirstSynthMs; }
@@ -49,6 +50,7 @@ signals:
     void ttsError(const QString &message);
     void readinessVoiceTestFinished(bool ok, const QString &detail);
     void testToneFinished(bool ok, const QString &detail);
+    void audioPlaybackChanged();
 
 private:
     void onSentence(int turnId, int idx, const QString &text);

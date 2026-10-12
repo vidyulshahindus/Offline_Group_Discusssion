@@ -24,11 +24,18 @@ public:
     Vad();
     explicit Vad(const Config &config);
 
+    void resetSession(double inheritedNoiseFloorDb, bool useInheritedFloor);
     QVector<Segment> pushPcm16k(const QByteArray &pcm16k, qint64 streamMsBase);
     QVector<Segment> flush(qint64 streamMsBase);
 
+    double noiseFloorDb() const { return m_noiseFloorDb; }
+    double lastFrameDb() const { return m_lastFrameDb; }
+    bool inSpeech() const { return m_inSpeech; }
+
 private:
+    void initFromConfig();
     double frameDb(const qint16 *samples, int count) const;
+    void finalizeCalibration();
     void forceCutIfNeeded(qint64 streamMsBase);
     Segment finalizeSegment(qint64 streamMsBase);
 
@@ -43,4 +50,8 @@ private:
     QByteArray m_preRoll;
     QByteArray m_segmentPcm;
     int m_maxSegmentSamples = 0;
+    double m_lastFrameDb = -70.0;
+    bool m_floorLocked = false;
+    QVector<double> m_calibrationDbs;
+    qint64 m_calibrationMs = 0;
 };

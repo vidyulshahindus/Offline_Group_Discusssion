@@ -59,7 +59,10 @@ TurnSpeechController::TurnSpeechController(const AppConfig &config, const Paths 
             emit firstAudio(turnId, m_timestamps.firstAudioMs);
         }
     });
+    connect(&m_audio, &SpeechQueuePlayer::speechStarted, this,
+            [this](int) { emit audioPlaybackChanged(); });
     connect(&m_audio, &SpeechQueuePlayer::speechFinished, this, [this](int turnId, bool cancelled) {
+        emit audioPlaybackChanged();
         if (turnId == SpeechQueuePlayer::kTestToneTurnId) {
             emit testToneFinished(!cancelled,
                                   cancelled ? QStringLiteral("cancelled") : QString());
@@ -92,6 +95,11 @@ void TurnSpeechController::setOutputDevice(const QAudioDevice &device)
 bool TurnSpeechController::isSpeechBusy() const
 {
     return m_pendingTts > 0 || m_tts.isBusy() || m_audio.isPlaybackBusy();
+}
+
+bool TurnSpeechController::isAudioPlaybackBusy() const
+{
+    return m_audio.isPlaybackBusy();
 }
 
 void TurnSpeechController::beginTurn(int turnId, EagleMode mode, SessionLanguage language,

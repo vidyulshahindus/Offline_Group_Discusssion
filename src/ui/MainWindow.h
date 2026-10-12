@@ -59,6 +59,7 @@ private:
     void onClientError(const QString &message);
     void onTurnIdle(int turnId);
     void refreshTurnChrome();
+    void syncMicPlaybackMute();
     void setGenerating(bool generating);
     void refreshMicrophones();
     void refreshSpeakers();

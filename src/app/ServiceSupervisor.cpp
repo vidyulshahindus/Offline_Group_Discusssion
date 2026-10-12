@@ -125,8 +125,10 @@ bool ServiceSupervisor::startWhisperProcess(const QString &languageCode)
     m_whisper->setWorkingDirectory(QFileInfo(exe).absolutePath());
     m_whisper->setProcessChannelMode(QProcess::SeparateChannels);
 
+    const int ideal = QThread::idealThreadCount();
+    const int defaultThreads = qMin(6, ideal / 2);
     const int threads =
-        m_config.sttThreads() > 0 ? m_config.sttThreads() : QThread::idealThreadCount();
+        m_config.sttThreads() > 0 ? m_config.sttThreads() : qMax(1, defaultThreads);
     const QStringList args = {
         QStringLiteral("-m"), model,
         QStringLiteral("--host"), m_config.sttHost(),
@@ -135,7 +137,7 @@ bool ServiceSupervisor::startWhisperProcess(const QString &languageCode)
         QStringLiteral("-l"), languageCode,
         QStringLiteral("--inference-path"), QStringLiteral("/inference"),
     };
-    qCInfo(lcSupervisor) << "starting whisper-server" << exe << args;
+    qCInfo(lcSupervisor) << "starting whisper-server threads" << threads << "args" << args;
     m_whisper->start(exe, args);
     if (!m_whisper->waitForStarted(8000)) {
         qCWarning(lcSupervisor) << "whisper-server failed to start" << m_whisper->errorString();
