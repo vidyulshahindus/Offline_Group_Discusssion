@@ -1,0 +1,102 @@
+{
+  "examples": [
+    {
+      "subject": "Chemistry",
+      "unit": "Acids & Bases",
+      "topic_not_concept": "Neutralisation",
+      "concept": "Opposing forces create transformation"
+    },
+    {
+      "subject": "History",
+      "unit": "Turkish Invasions & Delhi Sultanate",
+      "topic_not_concept": "Battles and conquests",
+      "concept": "Power and Legitimacy"
+    },
+    {
+      "subject": "Geography",
+      "unit": "Maps and Globes",
+      "topic_not_concept": "Map projections",
+      "concept": "Representation",
+      "wisdom": "The maps in your own mind were made by someone else. Are they accurate?",
+      "rejected": [
+        {
+          "concept": "Perspective Shapes Reality",
+          "why": "Broader than needed; Representation names the act of making visible."
+        },
+        {
+          "concept": "Simplification Has Consequences",
+          "why": "True but narrow; the concept is about what the choice of simplification reveals about the maker's values."
+        }
+      ]
+    },
+    {
+      "subject": "Physics",
+      "unit": "Forces and Motion",
+      "topic_not_concept": "Newton's laws",
+      "concept": "Cause and Effect"
+    },
+    {
+      "subject": "Business",
+      "unit": "Organisation & Environment",
+      "topic_not_concept": "PEST analysis",
+      "concept": "Interdependence",
+      "wisdom": "What would disappear from your life if one thread in your web of relationships was suddenly removed?",
+      "rejected": [
+        {
+          "concept": "Systems Thinking",
+          "why": "Describes the method of analysis, not the phenomenon."
+        },
+        {
+          "concept": "Context Shapes Strategy",
+          "why": "Too narrow; does not transfer meaningfully beyond business."
+        }
+      ]
+    },
+    {
+      "subject": "History",
+      "unit": "Industrial Revolution & Imperialism (Grade 9)",
+      "topic_not_concept": "Steam engine and factories",
+      "concept": "Innovation and Transformation",
+      "wisdom": "Think of one capability you have developed recently. What did it transform in you - and in the people around you - whether you intended it or not?",
+      "rejected": [
+        {
+          "concept": "Progress and Its Cost",
+          "why": "Too evaluative; students stop at good or bad instead of the mechanism of transformation."
+        },
+        {
+          "concept": "Power and Exploitation",
+          "why": "Explains imperialism but not the Industrial Revolution, Romanticism, Photography or Meiji Japan."
+        }
+      ]
+    },
+    {
+      "subject": "Psychology",
+      "unit": "Bias",
+      "topic_not_concept": "Confirmation bias",
+      "concept": "Bias"
+    },
+    {
+      "subject": "Biology",
+      "unit": "Cell Division - Mitosis & Meiosis",
+      "topic_not_concept": "Stages of mitosis and meiosis",
+      "concept": "Continuity and Change"
+    },
+    {
+      "subject": "Biology",
+      "unit": "Membrane Transport",
+      "topic_not_concept": "Selective permeability",
+      "concept": "Structure Determines Function",
+      "wisdom": "What structures in your own life - your habits, your relationships, your daily routines - are determining what you are capable of becoming?",
+      "rejected": [
+        {
+          "concept": "Selective Permeability",
+          "why": "Too narrow; describes what membranes do, not the principle."
+        },
+        {
+          "concept": "Stability Through Balance",
+          "why": "Too general; does not capture how structure enables function across the unit."
+        }
+      ]
+    }
+  ]
+}

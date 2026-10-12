@@ -1,0 +1,44 @@
+{
+  "attributes": [
+    {
+      "name": "Inquirers",
+      "descriptor": "We nurture our curiosity, developing skills for inquiry and research. We know how to learn independently and with others."
+    },
+    {
+      "name": "Knowledgeable",
+      "descriptor": "We develop and use conceptual understanding, exploring knowledge across a range of disciplines. We engage with issues and ideas that have local and global significance."
+    },
+    {
+      "name": "Thinkers",
+      "descriptor": "We use critical and creative thinking skills to analyse and take responsible action on complex problems. We exercise initiative in making reasoned, ethical decisions."
+    },
+    {
+      "name": "Communicators",
+      "descriptor": "We express ourselves confidently and creatively in more than one language and in many ways. We collaborate effectively, listening carefully to the perspectives of other individuals and groups."
+    },
+    {
+      "name": "Principled",
+      "descriptor": "We act with integrity and honesty, with a strong sense of fairness and justice, and with respect for the dignity and rights of people everywhere. We take responsibility for our actions and their consequences."
+    },
+    {
+      "name": "Open-minded",
+      "descriptor": "We critically appreciate our own cultures and personal histories, as well as the values and traditions of others. We seek and evaluate a range of points of view, and we are willing to grow from the experience."
+    },
+    {
+      "name": "Caring",
+      "descriptor": "We show empathy, compassion and respect. We have a commitment to service, and we act to make a positive difference in the lives of others and in the world around us."
+    },
+    {
+      "name": "Risk-takers",
+      "descriptor": "We approach uncertainty with forethought and determination; we work independently and cooperatively to explore new ideas and innovative strategies. We are resourceful and resilient in the face of challenges and change."
+    },
+    {
+      "name": "Balanced",
+      "descriptor": "We understand the importance of balancing different aspects of our lives - intellectual, physical, and emotional - to achieve well-being for ourselves and others. We recognize our interdependence with other people and with the world in which we live."
+    },
+    {
+      "name": "Reflective",
+      "descriptor": "We thoughtfully consider the world and our own ideas and experience. We work to understand our strengths and weaknesses in order to support our learning and personal development."
+    }
+  ]
+}

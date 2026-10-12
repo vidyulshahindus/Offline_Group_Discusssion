@@ -1,0 +1,387 @@
+{
+  "schema": "eagle.unitpack.v1",
+  "id": "dp-bio-g11-cells-form-function",
+  "title": "Cells: form and function",
+  "programme": "DP",
+  "grade": 11,
+  "subject": "Biology",
+  "subject_group": "Sciences",
+  "campus": [
+    "IISH",
+    "IISP",
+    "IISB"
+  ],
+  "timeline": "Late September - November",
+  "benchmark_ref": {
+    "file": "Biology_Benchmarks_G6-12_2026-27.json",
+    "grade": 11,
+    "unit_number": 2,
+    "topic_codes": [
+      "B2.1",
+      "B2.2",
+      "B2.3"
+    ]
+  },
+  "clm": {
+    "concept": "Structure Determines Function",
+    "concept_meaning": "The way something is built decides what it can do.",
+    "relevance": "Your body works because millions of tiny structures are built for exactly one job, and the same is true of the habits and routines you build.",
+    "application": "Drug designers shape molecules to fit cell channels, engineers shape bridges to carry loads, and app developers structure code to decide what an app can do.",
+    "wisdom_question": "What structures in your own life - your habits, your relationships, your daily routines - are determining what you are capable of becoming?",
+    "transfers": [
+      {
+        "discipline": "Science",
+        "example": "The shape of an enzyme determines what it can catalyse."
+      },
+      {
+        "discipline": "Engineering",
+        "example": "Bridge design determines load capacity."
+      },
+      {
+        "discipline": "Technology",
+        "example": "Code architecture determines what an app can do."
+      },
+      {
+        "discipline": "Arts",
+        "example": "The structure of a sonnet determines what can be expressed within it."
+      }
+    ],
+    "rejected_concepts": [
+      {
+        "concept": "Selective Permeability",
+        "why": "Too narrow; describes only what membranes do and does not transfer beyond biology."
+      },
+      {
+        "concept": "Stability Through Balance",
+        "why": "True of cholesterol but too general; misses how structure enables function across the unit."
+      }
+    ],
+    "four_checks": {
+      "not_definitive": true,
+      "transfers_3_disciplines": true,
+      "wisdom_uncomfortable": true,
+      "needed_for_poc": true
+    },
+    "cra_script": "Today we begin a unit built on one big idea: structure determines function. The way something is built decides what it can do. A cell membrane lets oxygen slip through but stops ions, because of how its molecules are arranged. Engineers use the same idea when they design a bridge, and poets use it when they choose a sonnet. Here is a question to carry with you: what structures in your own life, your habits, your relationships, your routines, are deciding what you are capable of becoming?",
+    "steamh": {
+      "lenses": [
+        {
+          "lens": "T",
+          "through_this_lens": "Code architecture is to software what membrane structure is to transport: the way code is structured determines what the program can do, how fast it runs and how it fails.",
+          "poc_task": "Map the architecture of one app you use daily. Show how each structural layer determines one functional outcome, then redesign one layer and predict the change.",
+          "land_it_back": "Compare your app layers to the phospholipid bilayer and its proteins: which parts act as channels, pumps or receptors?"
+        },
+        {
+          "lens": "E",
+          "through_this_lens": "The sodium-potassium pump changes shape to move ions, the molecular equivalent of a mechanical pump changing state to move fluid.",
+          "poc_task": "Choose one engineered pump, map its structural cycle step by step, and compare it with the sodium-potassium pump's conformational cycle using a physical or 3D-printed model.",
+          "land_it_back": "Explain why both pumps need energy to move material against a gradient."
+        },
+        {
+          "lens": "A",
+          "through_this_lens": "A sonnet's 14-line structure determines what it can express; structure does not limit meaning, it creates meaning.",
+          "poc_task": "Write one idea in a strict form such as a haiku or sonnet and again with no constraint, then compare which is more powerful and why.",
+          "land_it_back": "Relate the constraint of the form to how a membrane's structure makes selective transport possible."
+        },
+        {
+          "lens": "M",
+          "through_this_lens": "The structure of an equation determines what it can model: a linear equation models proportional change, an exponential models growth.",
+          "poc_task": "Take one process from this unit, such as osmosis or diffusion, find a simple model for it, and show how each variable corresponds to a physical feature.",
+          "land_it_back": "Use your model to predict what happens when one structural feature, such as surface area, changes."
+        },
+        {
+          "lens": "H",
+          "through_this_lens": "Your habits, relationships and routines are structures; like membrane structure, they decide what enters your life, what you keep out, and what takes great energy to move against.",
+          "poc_task": "Identify three structures in your life: one serving you, one blocking something you need, and one you push against like active transport. Write one sentence on what you would change.",
+          "land_it_back": "Connect your three structures to channels, barriers and pumps in the membrane."
+        }
+      ]
+    },
+    "topics": [
+      {
+        "id": "t1",
+        "title": "Membranes and membrane transport",
+        "syllabus_ref": "B2.1",
+        "humanoid_lesson": true,
+        "summary": "Cell membranes are built from a phospholipid bilayer with proteins, cholesterol, glycoproteins and glycolipids, described by the fluid mosaic model. The hydrophobic core makes the membrane a barrier to ions and polar molecules. Small non-polar molecules cross by simple diffusion, water moves by osmosis, often through aquaporins, channel proteins allow facilitated diffusion of specific ions, and pump proteins use energy from ATP to move particles against a concentration gradient. Because diffusion through channels and pumping are specific, membranes are selectively permeable.",
+        "key_facts": "Phospholipids have hydrophilic phosphate heads and hydrophobic hydrocarbon tails, so they form a bilayer with a hydrophobic core. The core is a barrier to ions and polar molecules. Simple diffusion moves small non-polar molecules such as oxygen and carbon dioxide down a concentration gradient. Osmosis is the movement of water, often through aquaporins. Channel proteins allow facilitated diffusion of specific ions and can be open or closed. Pump proteins use ATP to move specific particles against a concentration gradient (active transport). Glycoproteins and glycolipids on the outer surface help in cell recognition and adhesion. The fluid mosaic model describes this structure.",
+        "key_terms": [
+          "phospholipid bilayer",
+          "hydrophilic",
+          "hydrophobic",
+          "fluid mosaic model",
+          "aquaporin",
+          "channel protein",
+          "pump protein",
+          "active transport",
+          "facilitated diffusion",
+          "osmosis",
+          "cholesterol",
+          "glycoprotein",
+          "concentration gradient"
+        ],
+        "knowledge": [
+          "Simple diffusion is not selective: it depends only on the size of particles and whether they are hydrophilic or hydrophobic. Facilitated diffusion and active transport are selective because channel and pump proteins are specific to particular particles.",
+          "Active transport needs energy from ATP because particles are moved against their concentration gradient. Pump proteins change shape as they move particles across the membrane.",
+          "Water molecules are polar but small. Some cross the bilayer directly, but aquaporins greatly increase the rate of osmosis in many cells.",
+          "Glycoproteins and glycolipids have carbohydrate chains on the extracellular side of the membrane. They are involved in cell adhesion and cell recognition."
+        ],
+        "misconceptions": [
+          {
+            "text": "Osmosis is the movement of solutes across a membrane; in fact it is the movement of water.",
+            "triggers": [
+              "osmosis",
+              "solute",
+              "salt moves"
+            ]
+          },
+          {
+            "text": "Active transport is just faster diffusion; in fact it moves particles against the gradient using ATP.",
+            "triggers": [
+              "active transport",
+              "faster",
+              "diffusion"
+            ]
+          }
+        ],
+        "discussion_context": "Many medicines and many genetic diseases depend on what can or cannot cross a cell membrane.",
+        "ctqs": [
+          {
+            "type": "what-if",
+            "command_term": "Explain",
+            "question": "Many drugs fail because they cannot cross cell membranes. Explain why a drug designer might make a molecule small and non-polar, and what new problems that choice could create for the body.",
+            "why_debatable": "There are trade-offs between entry into cells, solubility in blood and side effects, so different designs can be defended.",
+            "stall_breaker": "Which would worry you more as a patient: a drug that cannot enter cells, or one that enters every cell?"
+          },
+          {
+            "type": "contemporary",
+            "command_term": "Analyse",
+            "question": "Cystic fibrosis is caused by a faulty chloride channel protein. Analyse how one change in protein structure can affect membrane transport, mucus and a person's daily life, and which of these effects a cure should target first.",
+            "why_debatable": "Treating the channel, the mucus or the symptoms each has different evidence, cost and impact on quality of life.",
+            "stall_breaker": "If you could fix only one link in that chain, which link and why?"
+          },
+          {
+            "type": "ethical",
+            "command_term": "To what extent",
+            "question": "New gene therapies can repair faulty membrane channels but may cost crores of rupees per patient. To what extent should a society fund rare-disease cures over cheaper treatments that help many more people? Use biological reasoning and fairness in your answer.",
+            "why_debatable": "It sets equity for individuals against the greatest good for the greatest number.",
+            "stall_breaker": "Would your answer change if the patient were someone you knew?"
+          }
+        ],
+        "practice": [
+          {
+            "question": "Explain how the structure of the phospholipid bilayer makes the membrane a barrier to ions and polar molecules.",
+            "marks": 4,
+            "command_term": "Explain",
+            "markscheme": [
+              "phospholipids have hydrophilic phosphate heads and hydrophobic hydrocarbon tails",
+              "heads face the aqueous fluid on both sides and tails form the core of the bilayer",
+              "the core of the membrane is hydrophobic or non-polar",
+              "ions and polar molecules cannot easily pass through the hydrophobic core",
+              "so they need channel or pump proteins to cross"
+            ]
+          },
+          {
+            "question": "Outline the role of pump proteins in active transport.",
+            "marks": 3,
+            "command_term": "Outline",
+            "markscheme": [
+              "pump proteins are specific to particular particles",
+              "they use energy from ATP",
+              "they move particles against a concentration gradient",
+              "the pump changes shape or conformation as it moves particles"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t2",
+        "title": "Organelles and compartmentalization",
+        "syllabus_ref": "B2.2",
+        "humanoid_lesson": true,
+        "summary": "Eukaryotic cells are divided into compartments by membranes, so incompatible processes can happen separately and enzymes and substrates can be concentrated where they are needed. The nucleus separates transcription from translation, mitochondria and chloroplasts have structures adapted to respiration and photosynthesis, and vesicles move materials between compartments.",
+        "key_facts": "Organelles are discrete subunits of cells adapted to perform specific functions. Membranes divide eukaryotic cells into compartments, which keeps incompatible biochemical processes apart and concentrates enzymes and substrates. The nuclear membrane separates transcription in the nucleus from translation in the cytoplasm, allowing mRNA to be modified before it is translated. The folded inner membrane of a mitochondrion gives a large surface area for reactions of aerobic respiration. Chloroplasts contain stacks of thylakoid membranes where light-dependent reactions happen.",
+        "key_terms": [
+          "organelle",
+          "compartmentalization",
+          "nucleus",
+          "nuclear pore",
+          "mitochondrion",
+          "cristae",
+          "chloroplast",
+          "thylakoid",
+          "vesicle",
+          "Golgi apparatus",
+          "ribosome",
+          "lysosome"
+        ],
+        "knowledge": [
+          "Compartmentalization lets cells keep conditions such as pH different in different organelles. For example, lysosomes contain digestive enzymes that work best in acidic conditions and would damage the rest of the cell if released.",
+          "Mitochondria and chloroplasts have double membranes and their own DNA and ribosomes, which is part of the evidence for the endosymbiotic theory."
+        ],
+        "misconceptions": [
+          {
+            "text": "Mitochondria make energy; in fact they release energy from food by aerobic respiration and store it in ATP.",
+            "triggers": [
+              "mitochondria",
+              "make energy",
+              "produce energy"
+            ]
+          }
+        ],
+        "discussion_context": "Cells, like organisations, decide how to divide space and work between parts.",
+        "ctqs": [
+          {
+            "type": "what-if",
+            "command_term": "Explain",
+            "question": "If eukaryotic cells had no internal membranes, explain which cell processes would become less efficient and why compartmentalization might be worth its energy cost.",
+            "why_debatable": "Prokaryotes thrive without compartments, so the advantage depends on cell size and complexity.",
+            "stall_breaker": "Bacteria manage without compartments. What do they give up, and what do they gain?"
+          },
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Analyse",
+            "question": "Mitochondria are thought to have once been free-living bacteria. Analyse the evidence for this view and how it changes the way we think about where one organism ends and another begins.",
+            "why_debatable": "The boundary of an individual organism is a genuinely open question in biology and philosophy.",
+            "stall_breaker": "Is your body one organism, or a partnership?"
+          },
+          {
+            "type": "ethical",
+            "command_term": "Evaluate",
+            "question": "Mitochondrial replacement therapy can prevent some inherited mitochondrial diseases by using an egg donor's mitochondria. Evaluate whether this use of cell biology should be allowed, considering health benefits, risks and the rights of the child.",
+            "why_debatable": "It weighs preventing disease against altering inherited DNA and consent of future people.",
+            "stall_breaker": "Does a child born this way have three parents? Does it matter?"
+          }
+        ],
+        "practice": [
+          {
+            "question": "Explain the advantages of compartmentalization in eukaryotic cells.",
+            "marks": 4,
+            "command_term": "Explain",
+            "markscheme": [
+              "incompatible processes are kept separate",
+              "enzymes and substrates can be concentrated in one compartment",
+              "conditions such as pH can differ between compartments",
+              "harmful enzymes such as those in lysosomes are kept away from the rest of the cell",
+              "nuclear membrane allows mRNA to be modified before translation"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t3",
+        "title": "Cell specialization",
+        "syllabus_ref": "B2.3",
+        "humanoid_lesson": true,
+        "summary": "In multicellular organisms, unspecialized stem cells divide and differentiate into specialized cells whose structures suit their functions. Cell size and surface area to volume ratio limit how cells can be built, and specialized cells such as red blood cells, neurons, sperm, egg cells and alveolar cells show clear structure and function links.",
+        "key_facts": "Stem cells are unspecialized cells that can divide repeatedly and differentiate into specialized cells. Stem cells in the early embryo can become many cell types, while adult stem cells in places such as bone marrow can produce a narrower range. As a cell grows, its volume increases faster than its surface area, which limits the rate of exchange, so cell size is an aspect of specialization. Red blood cells have no nucleus and a biconcave shape for carrying oxygen. Type I pneumocytes are very thin for gas exchange, and type II pneumocytes secrete surfactant.",
+        "key_terms": [
+          "stem cell",
+          "differentiation",
+          "totipotent",
+          "pluripotent",
+          "multipotent",
+          "surface area to volume ratio",
+          "red blood cell",
+          "pneumocyte",
+          "neuron",
+          "gamete"
+        ],
+        "knowledge": [
+          "Differentiation happens because different genes are expressed in different cells, even though the cells contain the same genome.",
+          "A high surface area to volume ratio allows faster exchange of materials and heat, which is why many specialized cells are flattened, folded or small."
+        ],
+        "misconceptions": [
+          {
+            "text": "Specialized cells have different DNA; in fact they have the same DNA but express different genes.",
+            "triggers": [
+              "different DNA",
+              "different genes",
+              "lose genes"
+            ]
+          }
+        ],
+        "discussion_context": "Stem cells promise new treatments but raise hard questions about where cells come from.",
+        "ctqs": [
+          {
+            "type": "what-if",
+            "command_term": "Explain",
+            "question": "If every cell in your body stayed an unspecialized stem cell, explain what would go wrong for the structure and function of your tissues and organs.",
+            "why_debatable": "Students can reason about many failures and trade-offs, and which matters most is arguable.",
+            "stall_breaker": "Which organ do you think would fail first, and why?"
+          },
+          {
+            "type": "contentious",
+            "command_term": "Discuss",
+            "question": "Embryonic stem cells can become more cell types than adult stem cells, but using them raises ethical concerns. Discuss which type research funding should prioritise, using biological evidence and ethical reasoning.",
+            "why_debatable": "Scientific potential and moral status of embryos are both contested.",
+            "stall_breaker": "Does it change your view if the embryos would otherwise be discarded?"
+          },
+          {
+            "type": "contemporary",
+            "command_term": "To what extent",
+            "question": "Lab-grown tissues and organs may one day shorten transplant waiting lists. To what extent should we accept the risks of new stem-cell therapies to save lives sooner?",
+            "why_debatable": "It balances urgency of patients against safety evidence.",
+            "stall_breaker": "Who should decide how much risk is acceptable: patients, doctors or governments?"
+          }
+        ],
+        "practice": [
+          {
+            "question": "Describe how the structure of a red blood cell is adapted to its function.",
+            "marks": 3,
+            "command_term": "Describe",
+            "markscheme": [
+              "no nucleus, so more space for haemoglobin",
+              "biconcave shape gives a large surface area for diffusion of oxygen",
+              "small and flexible, so it can pass through narrow capillaries",
+              "contains haemoglobin that binds oxygen"
+            ]
+          }
+        ]
+      }
+    ],
+    "reflection": {
+      "learning_goals": [
+        "I can explain how the structure of the membrane controls what enters and leaves a cell.",
+        "I can explain how the structure of an organelle suits its function.",
+        "I can describe how specialized cells are adapted to their functions.",
+        "I can use the command terms Explain and Evaluate accurately in written answers."
+      ]
+    },
+    "sel_wisdom": {
+      "connect": "Think of one routine you follow every day. What is it making possible for you, and what is it keeping out?",
+      "deepen": "Where could 'structure determines function' lead future research: designing drugs, new materials or artificial organs?",
+      "wisdom": "If you could redesign one structure in your life, a habit, a friendship pattern or a routine, what would you change, and what would it cost you?",
+      "scenario_value": "Principled"
+    }
+  },
+  "ib": {
+    "myp": null,
+    "dp": {
+      "theme_or_organiser": "Form and function",
+      "level_of_organization": "Cells",
+      "guiding_questions": [
+        "How do molecules of lipid and protein assemble into biological membranes?",
+        "What determines whether a substance can pass through a biological membrane?",
+        "How are organelles in cells adapted to their functions?",
+        "What are the advantages of compartmentalization in cells?",
+        "What are the roles of stem cells in multicellular organisms?",
+        "How are differentiated cells adapted to their specialized functions?"
+      ],
+      "subject_concepts": [
+        "Form and function"
+      ],
+      "tok_link": "How do models such as the fluid mosaic model help us know things we cannot directly see?"
+    },
+    "learner_profile": [
+      "Thinkers",
+      "Principled"
+    ]
+  },
+  "authoring": {
+    "status": "reviewed",
+    "author": "Spec sample",
+    "reviewed_by": "",
+    "updated": "2026-10-08"
+  }
+}

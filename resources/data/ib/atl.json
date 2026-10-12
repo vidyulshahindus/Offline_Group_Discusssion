@@ -1,0 +1,39 @@
+{
+  "categories": [
+    {
+      "category": "Communication",
+      "clusters": [
+        "Communication skills"
+      ]
+    },
+    {
+      "category": "Social",
+      "clusters": [
+        "Collaboration skills"
+      ]
+    },
+    {
+      "category": "Self-management",
+      "clusters": [
+        "Organization skills",
+        "Affective skills",
+        "Reflection skills"
+      ]
+    },
+    {
+      "category": "Research",
+      "clusters": [
+        "Information literacy skills",
+        "Media literacy skills"
+      ]
+    },
+    {
+      "category": "Thinking",
+      "clusters": [
+        "Critical-thinking skills",
+        "Creative-thinking skills",
+        "Transfer skills"
+      ]
+    }
+  ]
+}

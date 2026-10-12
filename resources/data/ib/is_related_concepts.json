@@ -1,0 +1,58 @@
+{
+  "Economics": [
+    "Choice",
+    "Consumption",
+    "Equity",
+    "Globalization",
+    "Growth",
+    "Model",
+    "Poverty",
+    "Power",
+    "Resources",
+    "Scarcity",
+    "Sustainability",
+    "Trade"
+  ],
+  "Geography": [
+    "Causality (cause and consequence)",
+    "Culture",
+    "Disparity and equity",
+    "Diversity",
+    "Globalization",
+    "Management and intervention",
+    "Networks",
+    "Patterns and trends",
+    "Power",
+    "Processes",
+    "Scale",
+    "Sustainability"
+  ],
+  "History": [
+    "Causality (cause and consequence)",
+    "Civilization",
+    "Conflict",
+    "Cooperation",
+    "Culture",
+    "Governance",
+    "Identity",
+    "Ideology",
+    "Innovation and revolution",
+    "Interdependence",
+    "Perspective",
+    "Significance"
+  ],
+  "Integrated humanities": [
+    "Causality (cause and consequence)",
+    "Choice",
+    "Culture",
+    "Equity",
+    "Globalization",
+    "Identity",
+    "Innovation and revolution",
+    "Perspective",
+    "Power",
+    "Processes",
+    "Resources",
+    "Sustainability"
+  ]
+}

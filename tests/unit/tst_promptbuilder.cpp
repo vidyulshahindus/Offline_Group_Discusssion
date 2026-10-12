@@ -1,8 +1,11 @@
 #include "AppConfig.h"
+#include "IbReference.h"
 #include "Paths.h"
 #include "PromptBuilder.h"
 #include "PromptTypes.h"
 #include "TokenEstimator.h"
+#include "UnitContextBuilder.h"
+#include "UnitPack.h"
 
 #include <QCoreApplication>
 #include <QJsonArray>
@@ -19,7 +22,11 @@ private slots:
     void systemPromptStableAcrossTurnsAndLanguages();
     void tailIsLastInDoubtTurn();
     void doubtWithoutUnitOmitsConceptLink();
+    void doubtWithUnitLinksConcept();
     void turnThreeExtendsTurnTwoMessagePrefix();
+    void systemPromptStableWithUnitAcrossModesAndLanguages();
+    void systemPromptChangesWhenTopicChanges();
+    void systemPromptHasBlankLineBeforeUnitCard();
 };
 
 static QByteArray messagesJson(const QVector<LlmMessage> &messages)
@@ -159,6 +166,96 @@ void TestPromptBuilder::turnThreeExtendsTurnTwoMessagePrefix()
     QCOMPARE(m3.at(4).content, h2a.content);
     QCOMPARE(m3.at(5).role, QStringLiteral("user"));
     QVERIFY(m3.at(5).content.contains(QStringLiteral("Give an example")));
+}
+
+void TestPromptBuilder::doubtWithUnitLinksConcept()
+{
+    AppConfig config;
+    Paths paths(config);
+    TokenEstimator estimator(config);
+    PromptBuilder builder(config, paths, estimator);
+    QVERIFY(builder.loadTemplates());
+
+    IbReference ib;
+    ib.loadFromResources();
+    const UnitPack pack =
+        UnitPack::fromFile(QStringLiteral(":/data/units/myp-g7-delhi-sultanate.json"));
+    UnitContext unit = UnitContextBuilder::fromPack(pack, 0, ib);
+
+    TurnInputs inputs;
+    inputs.question = QStringLiteral("Why did rulers build monuments?");
+    const QString turn = builder.buildUserTurn(inputs, unit);
+    QVERIFY(turn.contains(QStringLiteral("unit concept")));
+    QVERIFY(turn.contains(unit.concept));
+}
+
+void TestPromptBuilder::systemPromptStableWithUnitAcrossModesAndLanguages()
+{
+    AppConfig config;
+    Paths paths(config);
+    TokenEstimator estimator(config);
+    PromptBuilder builder(config, paths, estimator);
+    QVERIFY(builder.loadTemplates());
+
+    IbReference ib;
+    QVERIFY(ib.loadFromResources());
+    QString err;
+    const UnitPack pack = UnitPack::fromFile(
+        QStringLiteral(":/data/units/myp-g7-delhi-sultanate.json"), &err);
+    QVERIFY(err.isEmpty());
+
+    UnitContext unit = UnitContextBuilder::fromPack(pack, 0, ib);
+    const QString sys = builder.systemPrompt(unit);
+
+    TurnInputs en;
+    en.mode = EagleMode::Doubt;
+    en.language = SessionLanguage::English;
+    en.question = QStringLiteral("Test?");
+    TurnInputs hi = en;
+    hi.language = SessionLanguage::Hindi;
+    builder.buildUserTurn(en, unit);
+    builder.buildUserTurn(hi, unit);
+    QCOMPARE(builder.systemPrompt(unit), sys);
+}
+
+void TestPromptBuilder::systemPromptChangesWhenTopicChanges()
+{
+    AppConfig config;
+    Paths paths(config);
+    TokenEstimator estimator(config);
+    PromptBuilder builder(config, paths, estimator);
+    QVERIFY(builder.loadTemplates());
+
+    IbReference ib;
+    QVERIFY(ib.loadFromResources());
+    const UnitPack pack = UnitPack::fromFile(
+        QStringLiteral(":/data/units/myp-g7-delhi-sultanate.json"));
+    QVERIFY(pack.topicCount() >= 2);
+
+    const QString sys0 = builder.systemPrompt(UnitContextBuilder::fromPack(pack, 0, ib));
+    const QString sys1 = builder.systemPrompt(UnitContextBuilder::fromPack(pack, 1, ib));
+    QVERIFY(!sys0.isEmpty());
+    QVERIFY(!sys1.isEmpty());
+    QVERIFY(sys0 != sys1);
+}
+
+void TestPromptBuilder::systemPromptHasBlankLineBeforeUnitCard()
+{
+    AppConfig config;
+    Paths paths(config);
+    TokenEstimator estimator(config);
+    PromptBuilder builder(config, paths, estimator);
+    QVERIFY(builder.loadTemplates());
+
+    IbReference ib;
+    QVERIFY(ib.loadFromResources());
+    const UnitPack pack = UnitPack::fromFile(
+        QStringLiteral(":/data/units/myp-g7-delhi-sultanate.json"));
+    const UnitContext unit = UnitContextBuilder::fromPack(pack, 0, ib);
+    const QString sys = builder.systemPrompt(unit);
+
+    QVERIFY(sys.contains(QStringLiteral("\n\nUNIT CARD")));
+    QVERIFY(!sys.contains(QLatin1Char('\r')));
 }
 
 int main(int argc, char *argv[])

@@ -1,0 +1,32 @@
+{
+  "concepts": [
+    "Evidence",
+    "Certainty",
+    "Truth",
+    "Interpretation",
+    "Power",
+    "Justification",
+    "Explanation",
+    "Objectivity",
+    "Perspective",
+    "Culture",
+    "Values",
+    "Responsibility"
+  ],
+  "core_theme": "Knowledge and the knower",
+  "optional_themes": [
+    "Knowledge and technology",
+    "Knowledge and language",
+    "Knowledge and politics",
+    "Knowledge and religion",
+    "Knowledge and indigenous societies"
+  ],
+  "areas_of_knowledge": [
+    "History",
+    "The human sciences",
+    "The natural sciences",
+    "Mathematics",
+    "The arts"
+  ],
+  "use": "DP deepening and wisdom turns may raise one knowledge question, e.g. 'How do we know...?', 'Whose perspective...?', 'What counts as evidence here?'"
+}

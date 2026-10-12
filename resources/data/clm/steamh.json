@@ -1,0 +1,93 @@
+{
+  "lenses": [
+    {
+      "id": "S",
+      "name": "Science"
+    },
+    {
+      "id": "T",
+      "name": "Technology"
+    },
+    {
+      "id": "E",
+      "name": "Engineering"
+    },
+    {
+      "id": "A",
+      "name": "Arts"
+    },
+    {
+      "id": "M",
+      "name": "Mathematics"
+    },
+    {
+      "id": "H",
+      "name": "Humanities and personal wisdom"
+    }
+  ],
+  "team_rule": "Exclude the subject's own lens. Sciences use TEAMH; Individuals and societies use STEAM.",
+  "subject_group_lenses": {
+    "Sciences": [
+      "T",
+      "E",
+      "A",
+      "M",
+      "H"
+    ],
+    "Individuals and societies": [
+      "S",
+      "T",
+      "E",
+      "A",
+      "M"
+    ],
+    "Mathematics": [
+      "S",
+      "T",
+      "E",
+      "A",
+      "H"
+    ],
+    "Arts": [
+      "S",
+      "T",
+      "E",
+      "M",
+      "H"
+    ],
+    "Design": [
+      "S",
+      "T",
+      "A",
+      "M",
+      "H"
+    ],
+    "Language and literature": [
+      "S",
+      "T",
+      "E",
+      "A",
+      "M",
+      "H"
+    ],
+    "Other": [
+      "S",
+      "T",
+      "E",
+      "A",
+      "M",
+      "H"
+    ]
+  },
+  "steps": [
+    "Teacher states the why (relevance) and the concept at the start of every unit",
+    "Students are divided into teams for interdisciplinary understanding of the concept",
+    "Presentations by respective teams",
+    "Teacher affirms by asking individuals how they will apply the concept in their personal life during the GenAI discussion"
+  ],
+  "card_pattern": [
+    "through_this_lens",
+    "poc_task",
+    "land_it_back"
+  ]
+}

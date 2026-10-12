@@ -1,0 +1,56 @@
+{
+  "sets": [
+    {
+      "subject": "IBDP Physics: Circular Motion & Gravitation",
+      "bad": [
+        "What is centripetal force?",
+        "Why do satellites orbit Earth?",
+        "State Newton's law of gravitation."
+      ],
+      "good": [
+        "Explain why satellites with different purposes cannot all operate in the same orbit. Consider orbital radius, velocity, gravitational force and mission objectives.",
+        "Analyse how increasing satellites and space debris could affect future launches.",
+        "By 2040, some experts predict that Earth's orbit may become increasingly congested due to commercial satellite constellations. Evaluate whether access to space should become an internationally regulated resource similar to fishing grounds or Antarctica. Justify your response using principles of gravitation, orbital motion and current developments in space technology."
+      ]
+    },
+    {
+      "subject": "IBDP Biology: Gene Editing / CRISPR",
+      "bad": [
+        "What is CRISPR?",
+        "List two uses of gene editing.",
+        "Is gene editing good or bad?"
+      ],
+      "good": [
+        "Recent advances in CRISPR technology suggest that many inherited diseases may become preventable. Explain how eliminating disease-causing alleles could influence genetic variation within future human populations.",
+        "Analyse how widespread gene editing could influence genetic diversity, natural selection and future human evolution.",
+        "Some scientists argue that refusing to use safe gene-editing technologies would be unethical because preventable diseases would continue to exist. Others argue that editing the human genome fundamentally changes evolution itself. Discuss the extent to which society should intervene in human evolution."
+      ]
+    },
+    {
+      "subject": "IBMYP Geography: Globalisation",
+      "bad": [
+        "Define globalisation.",
+        "What is a supply chain?",
+        "Write advantages and disadvantages of globalisation."
+      ],
+      "good": [
+        "The COVID-19 pandemic, semiconductor shortages and ongoing geopolitical conflicts exposed weaknesses in global supply chains. Explain why countries that appeared economically strong were still vulnerable to disruptions occurring thousands of kilometres away.",
+        "Many countries are encouraging local manufacturing even though it may increase production costs. Analyse how reducing dependence on global trade could affect economic growth, employment, sustainability and resilience.",
+        "Evaluate the statement: \"Economic resilience is more important than economic efficiency in today's interconnected world.\" Use geographical evidence from recent global events to justify your conclusion."
+      ]
+    },
+    {
+      "subject": "IBMYP English: Persuasive Language & Media Bias",
+      "bad": [
+        "What is bias?",
+        "List persuasive techniques.",
+        "Write the advantages and disadvantages of social media."
+      ],
+      "good": [
+        "Explain how language choices in news headlines can shape readers' views of a climate protest, conflict or public health issue.",
+        "Analyse how two media posts about the same event could create different interpretations through tone, images, omissions and evidence.",
+        "Evaluate whether platforms should remove misleading content even when it limits freedom of expression, using language choices and audience impact."
+      ]
+    }
+  ]
+}

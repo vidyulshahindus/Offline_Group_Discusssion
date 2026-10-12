@@ -46,6 +46,15 @@ OllamaBackend::OllamaBackend(const AppConfig &config, QObject *parent)
     m_overallTimer->setSingleShot(true);
     m_overallTimer->setInterval(config.llmRequestTimeoutMs());
     connect(m_overallTimer, &QTimer::timeout, this, &OllamaBackend::onOverallTimeout);
+
+    m_warmScheduleTimer = new QTimer(this);
+    m_warmScheduleTimer->setSingleShot(true);
+    connect(m_warmScheduleTimer, &QTimer::timeout, this, [this]() {
+        if (m_hasCoalescedWarm && !m_auxReply && !m_inStartupSequence) {
+            enqueueCoalescedWarmIfNeeded();
+        }
+        pumpAuxQueue();
+    });
 }
 
 OllamaBackend::~OllamaBackend()
@@ -58,17 +67,62 @@ bool OllamaBackend::isBusy() const
     return m_streamReply != nullptr || m_auxReply != nullptr;
 }
 
+void OllamaBackend::safeAbortStream()
+{
+    QNetworkReply *reply = m_streamReply;
+    if (!reply) {
+        return;
+    }
+    m_streamReply = nullptr;
+    reply->disconnect(this);
+    reply->abort();
+    m_firstTokenTimer->stop();
+    m_overallTimer->stop();
+    m_lineBuffer.clear();
+    m_streamPurpose.clear();
+    reply->deleteLater();
+}
+
+void OllamaBackend::abortStreamForThinkingRetry()
+{
+    QNetworkReply *reply = m_streamReply;
+    if (!reply) {
+        return;
+    }
+    m_streamReply = nullptr;
+    m_firstTokenTimer->stop();
+    m_overallTimer->stop();
+    reply->abort();
+}
+
+void OllamaBackend::safeAbortAux()
+{
+    QNetworkReply *reply = m_auxReply;
+    if (!reply) {
+        return;
+    }
+    m_auxReply = nullptr;
+    m_auxPurpose.clear();
+    m_hasActiveAuxJob = false;
+    reply->disconnect(this);
+    reply->abort();
+    reply->deleteLater();
+}
+
+void OllamaBackend::abortActiveTurn()
+{
+    safeAbortStream();
+}
+
 void OllamaBackend::abort()
 {
-    if (m_streamReply) {
-        m_streamReply->abort();
-        cleanupStream();
-    }
-    if (m_auxReply) {
-        m_auxReply->abort();
-        m_auxReply->deleteLater();
-        m_auxReply = nullptr;
-    }
+    safeAbortStream();
+    safeAbortAux();
+    m_auxQueue.clear();
+    m_hasCoalescedWarm = false;
+    m_startupAwaitingWarm = false;
+    m_inStartupSequence = false;
+    m_startupStep = StartupStep::Idle;
 }
 
 bool OllamaBackend::modelHasThinking(const QString &model) const
@@ -169,86 +223,221 @@ QJsonObject OllamaBackend::buildChatBody(const QString &model, const QVector<Llm
     return body;
 }
 
-QNetworkReply *OllamaBackend::postChat(const QJsonObject &body, const QString &purpose,
-                                       bool streamResponse)
-{
-    if (m_auxReply) {
-        qCWarning(lcOllama) << "Aux request" << purpose << "blocked: another aux request is active:"
-                            << m_auxPurpose;
-        return nullptr;
-    }
-
-    logChatRequest(purpose, body);
-    const QUrl url(baseUrlTrimmed(m_config) + QStringLiteral("/api/chat"));
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
-    m_auxPurpose = purpose;
-    m_auxReply = m_network->post(request, QJsonDocument(body).toJson(QJsonDocument::Compact));
-    if (!streamResponse) {
-        connect(m_auxReply, &QNetworkReply::finished, this, &OllamaBackend::onSimpleChatFinished);
-    } else {
-        connect(m_auxReply, &QNetworkReply::readyRead, this, [this]() {
-            if (m_auxReply) {
-                m_auxReply->readAll();
-            }
-        });
-        connect(m_auxReply, &QNetworkReply::finished, this, &OllamaBackend::onSimpleChatFinished);
-    }
-    return m_auxReply;
-}
-
 void OllamaBackend::runStartupSequence(const QString &model, const QString &fallbackModel,
                                        const QString &systemPrompt)
 {
+    m_auxQueue.clear();
+    m_hasCoalescedWarm = false;
+    m_inStartupSequence = true;
+    m_startupAwaitingWarm = true;
     m_startupPrimaryModel = model;
     m_startupFallbackModel = fallbackModel;
     m_startupSystemPrompt = systemPrompt;
     m_startupStep = StartupStep::ShowPrimary;
-    showModel(model);
+
+    m_auxQueue.enqueue(AuxJob{AuxJob::Kind::Show, model, {}});
+    if (!fallbackModel.isEmpty() && fallbackModel != model) {
+        m_auxQueue.enqueue(AuxJob{AuxJob::Kind::Show, fallbackModel, {}});
+        m_startupStep = StartupStep::ShowFallback;
+    }
+    m_auxQueue.enqueue(AuxJob{AuxJob::Kind::Preload, model, {}});
+    m_startupStep = StartupStep::Preload;
+    pumpAuxQueue();
 }
 
-void OllamaBackend::advanceStartupSequence()
+void OllamaBackend::scheduleWarmUp(const QString &model, const QString &systemPrompt)
 {
-    switch (m_startupStep) {
-    case StartupStep::ShowPrimary:
-        if (!m_startupFallbackModel.isEmpty()
-            && m_startupFallbackModel != m_startupPrimaryModel) {
-            m_startupStep = StartupStep::ShowFallback;
-            showModel(m_startupFallbackModel);
-        } else {
-            m_startupStep = StartupStep::Preload;
-            preload(m_startupPrimaryModel);
+    m_coalescedWarmModel = model;
+    m_coalescedWarmPrompt = systemPrompt;
+    m_hasCoalescedWarm = true;
+    if (m_inStartupSequence || m_auxReply) {
+        return;
+    }
+    m_warmScheduleTimer->start(0);
+}
+
+void OllamaBackend::enqueueCoalescedWarmIfNeeded()
+{
+    if (!m_hasCoalescedWarm) {
+        return;
+    }
+    m_auxQueue.enqueue(
+        AuxJob{AuxJob::Kind::WarmUp, m_coalescedWarmModel, m_coalescedWarmPrompt});
+    m_hasCoalescedWarm = false;
+}
+
+void OllamaBackend::pumpAuxQueue()
+{
+    if (m_auxReply) {
+        return;
+    }
+
+    if (m_auxQueue.isEmpty()) {
+        if (m_hasCoalescedWarm && !m_inStartupSequence) {
+            enqueueCoalescedWarmIfNeeded();
         }
-        break;
-    case StartupStep::ShowFallback:
-        m_startupStep = StartupStep::Preload;
-        preload(m_startupPrimaryModel);
-        break;
-    case StartupStep::Preload:
-        m_startupStep = StartupStep::WarmUp;
-        warmUp(m_startupPrimaryModel, m_startupSystemPrompt);
-        break;
-    case StartupStep::WarmUp:
+        if (m_auxQueue.isEmpty()) {
+            return;
+        }
+    }
+
+    const AuxJob job = m_auxQueue.dequeue();
+    startAuxJob(job);
+}
+
+void OllamaBackend::startAuxJob(const AuxJob &job)
+{
+    if (m_auxReply) {
+        qCWarning(lcOllama) << "startAuxJob while aux in flight";
+        return;
+    }
+
+    m_activeAuxJob = job;
+    m_hasActiveAuxJob = true;
+
+    if (job.kind == AuxJob::Kind::Show) {
+        const QUrl url(baseUrlTrimmed(m_config) + QStringLiteral("/api/show"));
+        QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+        QJsonObject body;
+        body.insert(QStringLiteral("model"), job.model);
+        m_auxPurpose = QStringLiteral("show:%1").arg(job.model);
+        m_auxReply = m_network->post(request, QJsonDocument(body).toJson(QJsonDocument::Compact));
+        connect(m_auxReply, &QNetworkReply::finished, this, &OllamaBackend::onAuxReplyFinished);
+        return;
+    }
+
+    QJsonObject body;
+    if (job.kind == AuxJob::Kind::Preload) {
+        m_pendingPreloadModel = job.model;
+        m_auxPurpose = QStringLiteral("preload");
+        body.insert(QStringLiteral("model"), job.model);
+        body.insert(QStringLiteral("messages"), QJsonArray());
+        body.insert(QStringLiteral("stream"), false);
+        body.insert(QStringLiteral("keep_alive"), m_config.llmKeepAlive());
+    } else {
+        m_auxPurpose = QStringLiteral("warmup");
+        QVector<LlmMessage> messages;
+        LlmMessage system;
+        system.role = QStringLiteral("system");
+        system.content = job.systemPrompt;
+        messages.append(system);
+        LlmMessage user;
+        user.role = QStringLiteral("user");
+        user.content = QStringLiteral("Reply with one word: Ready.");
+        messages.append(user);
+
+        LlmRequest req;
+        req.model = job.model;
+        req.messages = messages;
+        req.purpose = QStringLiteral("warmup");
+        req.numPredict = 2;
+        req.temperature = 0.1;
+        body = buildChatBody(job.model, messages, req, true, false);
+    }
+
+    logChatRequest(m_auxPurpose, body);
+    const QUrl url(baseUrlTrimmed(m_config) + QStringLiteral("/api/chat"));
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    m_auxReply = m_network->post(request, QJsonDocument(body).toJson(QJsonDocument::Compact));
+    connect(m_auxReply, &QNetworkReply::finished, this, &OllamaBackend::onAuxReplyFinished);
+}
+
+void OllamaBackend::completeAuxJob(const AuxJob &job, bool ok, const QByteArray &body)
+{
+    if (job.kind == AuxJob::Kind::Show) {
+        if (ok) {
+            const QJsonDocument doc = QJsonDocument::fromJson(body);
+            const QJsonObject obj = doc.object();
+            const QString model = obj.value(QStringLiteral("model")).toString();
+            QStringList caps;
+            for (const QJsonValue &cap : obj.value(QStringLiteral("capabilities")).toArray()) {
+                caps.append(cap.toString());
+            }
+            if (caps.isEmpty()) {
+                const QJsonObject details = obj.value(QStringLiteral("details")).toObject();
+                for (const QJsonValue &cap : details.value(QStringLiteral("capabilities")).toArray()) {
+                    caps.append(cap.toString());
+                }
+            }
+            if (caps.isEmpty() && shouldSendThinkFalse(model)) {
+                caps.append(QStringLiteral("thinking"));
+            }
+            ModelInfo info;
+            info.capabilities = caps;
+            info.sizeBytes = obj.value(QStringLiteral("size")).toInteger();
+            m_modelInfo.insert(model, info);
+            emit modelShown(model, caps, info.sizeBytes);
+        }
+        return;
+    }
+
+    if (job.kind == AuxJob::Kind::Preload) {
+        emit preloaded(m_pendingPreloadModel, ok);
+        m_pendingPreloadModel.clear();
+        if (m_startupAwaitingWarm) {
+            m_startupAwaitingWarm = false;
+            if (!m_hasCoalescedWarm) {
+                m_coalescedWarmModel = m_startupPrimaryModel;
+                m_coalescedWarmPrompt = m_startupSystemPrompt;
+                m_hasCoalescedWarm = true;
+            }
+            enqueueCoalescedWarmIfNeeded();
+        }
+        return;
+    }
+
+    emit warmUpFinished(ok);
+    if (m_inStartupSequence) {
+        m_inStartupSequence = false;
         m_startupStep = StartupStep::Idle;
-        emit startupSequenceFinished(true);
-        break;
-    case StartupStep::Idle:
-        break;
+        emit startupSequenceFinished(ok);
+    }
+}
+
+void OllamaBackend::onAuxReplyFinished()
+{
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply || reply != m_auxReply) {
+        if (reply) {
+            reply->deleteLater();
+        }
+        return;
+    }
+
+    m_auxReply = nullptr;
+    const QString purpose = m_auxPurpose;
+    m_auxPurpose.clear();
+    const AuxJob job = m_activeAuxJob;
+    m_hasActiveAuxJob = false;
+
+    reply->disconnect(this);
+    const QByteArray body = reply->readAll();
+    const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const bool ok = reply->error() == QNetworkReply::NoError;
+    reply->deleteLater();
+
+    qCInfo(lcOllama) << purpose << "HTTP status=" << httpStatus << "ok=" << ok;
+
+    completeAuxJob(job, ok, body);
+    if (job.kind == AuxJob::Kind::WarmUp && m_hasCoalescedWarm && !m_inStartupSequence) {
+        m_warmScheduleTimer->start(0);
+    } else {
+        pumpAuxQueue();
     }
 }
 
 void OllamaBackend::start(const LlmRequest &req)
 {
+    safeAbortStream();
     if (m_auxReply) {
-        qCWarning(lcOllama) << "Turn start while aux busy (" << m_auxPurpose
-                            << "); aborting aux to avoid Ollama slot deadlock";
-        m_auxReply->abort();
-        m_auxReply->deleteLater();
-        m_auxReply = nullptr;
-        m_auxPurpose.clear();
+        qCWarning(lcOllama) << "Turn start blocked: aux busy (" << m_auxPurpose << ")";
+        emit failed(req.turnId, QStringLiteral("Eagle is still preparing the model — try again."),
+                    true);
+        return;
     }
 
-    abort();
     m_activeRequest = req;
     m_turnId = req.turnId;
     m_turnThinkingRetryUsed = false;
@@ -286,52 +475,14 @@ void OllamaBackend::beginTurnStream()
 
 void OllamaBackend::preload(const QString &model)
 {
-    m_pendingPreloadModel = model;
-    QJsonObject body;
-    body.insert(QStringLiteral("model"), model);
-    body.insert(QStringLiteral("messages"), QJsonArray());
-    body.insert(QStringLiteral("stream"), false);
-    body.insert(QStringLiteral("keep_alive"), m_config.llmKeepAlive());
-    if (!postChat(body, QStringLiteral("preload"), false)) {
-        m_pendingPreloadModel.clear();
-        if (m_startupStep == StartupStep::Preload) {
-            advanceStartupSequence();
-        }
-    }
+    m_auxQueue.enqueue(AuxJob{AuxJob::Kind::Preload, model, {}});
+    pumpAuxQueue();
 }
 
-void OllamaBackend::warmUp(const QString &model, const QString &systemPrompt)
+void OllamaBackend::showModel(const QString &model)
 {
-    QVector<LlmMessage> messages;
-    LlmMessage system;
-    system.role = QStringLiteral("system");
-    system.content = systemPrompt;
-    messages.append(system);
-    LlmMessage user;
-    user.role = QStringLiteral("user");
-    user.content = QStringLiteral("Reply with one word: Ready.");
-    messages.append(user);
-
-    LlmRequest req;
-    req.model = model;
-    req.messages = messages;
-    req.purpose = QStringLiteral("warmup");
-    req.numPredict = 2;
-    req.temperature = 0.1;
-
-    m_pendingWarmModel = model;
-    m_pendingWarmSystem = systemPrompt;
-
-    const QJsonObject body = buildChatBody(model, messages, req, true, false);
-    if (!postChat(body, QStringLiteral("warmup"), false)) {
-        m_pendingWarmModel.clear();
-        m_pendingWarmSystem.clear();
-        emit warmUpFinished(false);
-        if (m_startupStep == StartupStep::WarmUp) {
-            m_startupStep = StartupStep::Idle;
-            emit startupSequenceFinished(false);
-        }
-    }
+    m_auxQueue.enqueue(AuxJob{AuxJob::Kind::Show, model, {}});
+    pumpAuxQueue();
 }
 
 void OllamaBackend::probe()
@@ -341,29 +492,9 @@ void OllamaBackend::probe()
     connect(reply, &QNetworkReply::finished, this, &OllamaBackend::onProbeFinished);
 }
 
-void OllamaBackend::showModel(const QString &model)
-{
-    if (m_auxReply) {
-        qCWarning(lcOllama) << "showModel(" << model << ") skipped: aux busy with" << m_auxPurpose;
-        if (m_startupStep != StartupStep::Idle) {
-            advanceStartupSequence();
-        }
-        return;
-    }
-
-    const QUrl url(baseUrlTrimmed(m_config) + QStringLiteral("/api/show"));
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
-    QJsonObject body;
-    body.insert(QStringLiteral("model"), model);
-    m_auxPurpose = QStringLiteral("show:%1").arg(model);
-    m_auxReply = m_network->post(request, QJsonDocument(body).toJson(QJsonDocument::Compact));
-    connect(m_auxReply, &QNetworkReply::finished, this, &OllamaBackend::onShowFinished);
-}
-
 void OllamaBackend::parseStreamLine(const QByteArray &line)
 {
-    if (line.isEmpty()) {
+    if (line.isEmpty() || !m_streamReply) {
         return;
     }
     logStreamLine(line, m_streamPostTimer.elapsed());
@@ -388,14 +519,13 @@ void OllamaBackend::parseStreamLine(const QByteArray &line)
             m_turnThinkingRetryUsed = true;
             m_pendingThinkFalseRetry = true;
             qCInfo(lcOllama) << m_streamPurpose
-                             << "thinking-only chunk with no content; retrying once with think:false for model"
-                             << m_activeRequest.model;
-            m_streamReply->abort();
+                             << "thinking-only chunk with no content; retrying once with think:false";
+            abortStreamForThinkingRetry();
             return;
         }
         if (m_currentRequestSentThinkFalse) {
             qCWarning(lcOllama) << m_streamPurpose
-                                << "thinking field non-empty despite think:false; ignored for speech";
+                                << "thinking field non-empty despite think:false; ignored";
         }
     }
     if (!content.isEmpty()) {
@@ -482,20 +612,32 @@ void OllamaBackend::cleanupStream()
 
 void OllamaBackend::onStreamFinished()
 {
-    if (!m_streamReply) {
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    if (!reply) {
         return;
     }
+    const bool isCurrent = reply == m_streamReply;
+    if (!isCurrent && !m_pendingThinkFalseRetry) {
+        reply->deleteLater();
+        return;
+    }
+    if (isCurrent) {
+        m_streamReply = nullptr;
+    }
+    reply->disconnect(this);
 
-    const int httpStatus =
-        m_streamReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     qCInfo(lcOllama) << m_streamPurpose << "HTTP finished status=" << httpStatus
-                     << "error=" << m_streamReply->error()
-                     << m_streamReply->errorString();
+                     << "error=" << reply->error() << reply->errorString();
 
-    if (m_streamReply->error() == QNetworkReply::OperationCanceledError) {
+    if (reply->error() == QNetworkReply::OperationCanceledError) {
         const bool retryThink = m_pendingThinkFalseRetry;
         m_pendingThinkFalseRetry = false;
-        cleanupStream();
+        reply->deleteLater();
+        m_lineBuffer.clear();
+        m_streamPurpose.clear();
+        m_firstTokenTimer->stop();
+        m_overallTimer->stop();
         if (retryThink) {
             beginTurnStream();
         }
@@ -506,9 +648,13 @@ void OllamaBackend::onStreamFinished()
         onStreamReadyRead();
     }
 
-    if (m_streamReply->error() != QNetworkReply::NoError && !m_streamCompleted) {
-        handleModelFallback(m_streamReply->errorString());
-        cleanupStream();
+    if (reply->error() != QNetworkReply::NoError && !m_streamCompleted) {
+        handleModelFallback(reply->errorString());
+        reply->deleteLater();
+        m_lineBuffer.clear();
+        m_streamPurpose.clear();
+        m_firstTokenTimer->stop();
+        m_overallTimer->stop();
         return;
     }
 
@@ -518,7 +664,11 @@ void OllamaBackend::onStreamFinished()
                                         "or truncated response)."));
     }
 
-    cleanupStream();
+    reply->deleteLater();
+    m_lineBuffer.clear();
+    m_streamPurpose.clear();
+    m_firstTokenTimer->stop();
+    m_overallTimer->stop();
 }
 
 void OllamaBackend::handleModelFallback(const QString &errorText)
@@ -539,7 +689,7 @@ void OllamaBackend::onFirstTokenTimeout()
         finishStreamTurn(false,
                         QStringLiteral("Timed out waiting for the first speakable token from "
                                        "Ollama (content was empty; check think:false)."));
-        abort();
+        safeAbortStream();
     }
 }
 
@@ -547,7 +697,7 @@ void OllamaBackend::onOverallTimeout()
 {
     if (m_streamReply) {
         finishStreamTurn(false, QStringLiteral("Ollama request timed out."));
-        abort();
+        safeAbortStream();
     }
 }
 
@@ -575,86 +725,4 @@ void OllamaBackend::onProbeFinished()
     }
     m_installedModels = models;
     emit probed(true, QString(), models);
-}
-
-void OllamaBackend::onShowFinished()
-{
-    QNetworkReply *reply = m_auxReply;
-    m_auxReply = nullptr;
-    const QString purpose = m_auxPurpose;
-    m_auxPurpose.clear();
-    if (!reply) {
-        return;
-    }
-
-    const QByteArray data = reply->readAll();
-    const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    const bool ok = reply->error() == QNetworkReply::NoError;
-    reply->deleteLater();
-    qCInfo(lcOllama) << purpose << "HTTP status=" << httpStatus << "ok=" << ok;
-    if (!ok) {
-        if (m_startupStep != StartupStep::Idle) {
-            advanceStartupSequence();
-        }
-        return;
-    }
-
-    const QJsonDocument doc = QJsonDocument::fromJson(data);
-    const QJsonObject obj = doc.object();
-    const QString model = obj.value(QStringLiteral("model")).toString();
-    QStringList caps;
-    for (const QJsonValue &cap : obj.value(QStringLiteral("capabilities")).toArray()) {
-        caps.append(cap.toString());
-    }
-    if (caps.isEmpty()) {
-        const QJsonObject details = obj.value(QStringLiteral("details")).toObject();
-        for (const QJsonValue &cap : details.value(QStringLiteral("capabilities")).toArray()) {
-            caps.append(cap.toString());
-        }
-    }
-    if (caps.isEmpty() && shouldSendThinkFalse(model)) {
-        caps.append(QStringLiteral("thinking"));
-    }
-    ModelInfo info;
-    info.capabilities = caps;
-    info.sizeBytes = obj.value(QStringLiteral("size")).toInteger();
-    m_modelInfo.insert(model, info);
-    emit modelShown(model, caps, info.sizeBytes);
-
-    if (m_startupStep == StartupStep::ShowPrimary || m_startupStep == StartupStep::ShowFallback) {
-        advanceStartupSequence();
-    }
-}
-
-void OllamaBackend::onSimpleChatFinished()
-{
-    QNetworkReply *reply = m_auxReply;
-    m_auxReply = nullptr;
-    const QString purpose = m_auxPurpose;
-    m_auxPurpose.clear();
-    if (!reply) {
-        return;
-    }
-    const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    const bool ok = reply->error() == QNetworkReply::NoError;
-    reply->deleteLater();
-    qCInfo(lcOllama) << purpose << "HTTP status=" << httpStatus << "ok=" << ok;
-
-    const bool warm = purpose == QStringLiteral("warmup");
-    const bool preload = purpose == QStringLiteral("preload");
-
-    if (warm) {
-        emit warmUpFinished(ok);
-        m_pendingWarmModel.clear();
-        m_pendingWarmSystem.clear();
-        if (m_startupStep == StartupStep::WarmUp) {
-            advanceStartupSequence();
-        }
-    } else if (preload) {
-        emit preloaded(m_pendingPreloadModel, ok);
-        m_pendingPreloadModel.clear();
-        if (m_startupStep == StartupStep::Preload) {
-            advanceStartupSequence();
-        }
-    }
 }

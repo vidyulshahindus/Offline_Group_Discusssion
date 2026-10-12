@@ -1,5 +1,20 @@
 # Changelog
 
+## M4 — Curriculum layer, part A (2026-10-12)
+
+### M4 bugfix — Ollama aux crash on unit change / restore
+
+- Serialized Ollama aux (`show` → `preload` → warm-up) with coalesced `scheduleWarmUp`; safe reply abort without re-entrant `finished` corruption.
+- QSettings unit restore no longer fires a competing warm-up; startup sequence uses the restored unit system prompt once.
+- Unit change during a turn aborts stream/speech only (`abortActiveTurn`); re-warm queues after aux steps finish.
+- System prompt: blank line before `UNIT CARD`; templates normalized to LF.
+- Tests: `tst_ollamabackend` (preload + unit change, rapid warm-ups, abort aux); `tst_promptbuilder` (`\n\nUNIT CARD`, no `\r`).
+
+- Appendix B/C reference JSON and three sample unit packs (D.2–D.4) in resources; `UnitPack` validation, `UnitLibrary`, `ClmReference`, `IbReference`, `UnitContextBuilder`, `CurriculumController`.
+- Unit/topic/period pickers; context status line; QSettings persistence; unit card in system prompt; re-warm on unit/topic change with queued send during warm-up.
+- Doubt turn links to unit concept when a pack is loaded; STT bias terms extended from topic `key_terms` (config API only).
+- Unit tests: `tst_unitpack`; extended `tst_promptbuilder`.
+
 ## M3 — Speech input (2026-10-12)
 
 - **Word limit:** Soft spoken limit — complete sentences only; optional overflow cap (`discussion.word_limit_overflow`, default 0.5); assistant bubble and history match spoken text; no TTS for token-truncated fragments.

@@ -3,6 +3,7 @@
 
 #include <QCoreApplication>
 #include <QEventLoop>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QTcpServer>
@@ -21,6 +22,9 @@ private slots:
     void streamWithContentEmitsFinished();
     void streamThinkingOnlyEmitsFailed();
     void streamThinkingOnlyRetriesOnceWithThinkFalse();
+    void unitChangeDuringPreloadDoesNotCrashAndWarmsLatestPrompt();
+    void rapidWarmUpsSerializeAndKeepLastPrompt();
+    void abortDuringAuxDoesNotCrashAndNextWarmUpWorks();
 };
 
 static QByteArray httpNdjsonResponse(const QByteArray &lines)
@@ -34,6 +38,99 @@ static QByteArray httpRequestBody(const QByteArray &raw)
     const int headerEnd = raw.indexOf("\r\n\r\n");
     return headerEnd >= 0 ? raw.mid(headerEnd + 4) : raw;
 }
+
+static QByteArray httpOkJson(const QByteArray &jsonBody)
+{
+    return QByteArrayLiteral("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ")
+           + QByteArray::number(jsonBody.size()) + QByteArrayLiteral("\r\n\r\n") + jsonBody;
+}
+
+class MockOllamaHttpServer : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit MockOllamaHttpServer(QObject *parent = nullptr) : QObject(parent)
+    {
+        connect(&m_server, &QTcpServer::newConnection, this, &MockOllamaHttpServer::onNewConnection);
+    }
+
+    bool listen()
+    {
+        return m_server.listen(QHostAddress::LocalHost);
+    }
+
+    quint16 serverPort() const { return m_server.serverPort(); }
+
+    int maxConcurrentPosts() const { return m_maxConcurrentPosts; }
+    int warmUpPostCount() const { return m_warmUpPostCount; }
+    QString lastWarmSystemPrompt() const { return m_lastWarmSystemPrompt; }
+
+    void setHoldAuxUntilReleased(bool hold) { m_holdAux = hold; }
+    void releaseAux() { m_holdAux = false; }
+
+private slots:
+    void onNewConnection()
+    {
+        QTcpSocket *socket = m_server.nextPendingConnection();
+        connect(socket, &QTcpSocket::readyRead, socket, [this, socket]() {
+            const QByteArray raw = socket->readAll();
+            const QByteArray body = httpRequestBody(raw);
+            const bool isShow = raw.contains("/api/show");
+            const bool isChat = raw.contains("/api/chat");
+
+            if (isShow) {
+                const QByteArray json =
+                    QByteArrayLiteral("{\"model\":\"eagle-clm\",\"capabilities\":[]}");
+                socket->write(httpOkJson(json));
+                socket->flush();
+                socket->disconnectFromHost();
+                return;
+            }
+
+            if (!isChat) {
+                socket->disconnectFromHost();
+                return;
+            }
+
+            ++m_activePosts;
+            m_maxConcurrentPosts = qMax(m_maxConcurrentPosts, m_activePosts);
+
+            while (m_holdAux) {
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 20);
+            }
+
+            const QJsonDocument doc = QJsonDocument::fromJson(body);
+            const QJsonArray messages = doc.object().value(QStringLiteral("messages")).toArray();
+            const bool isWarmUp =
+                !messages.isEmpty()
+                && messages.at(0).toObject().value(QStringLiteral("role")).toString()
+                       == QStringLiteral("system");
+
+            if (isWarmUp) {
+                ++m_warmUpPostCount;
+                m_lastWarmSystemPrompt =
+                    messages.at(0).toObject().value(QStringLiteral("content")).toString();
+            }
+
+            const QByteArray json =
+                QByteArrayLiteral("{\"message\":{\"role\":\"assistant\",\"content\":\"Ready\"},"
+                                  "\"done\":true,\"done_reason\":\"stop\"}");
+            socket->write(httpOkJson(json));
+            socket->flush();
+            socket->disconnectFromHost();
+            --m_activePosts;
+        });
+    }
+
+private:
+    QTcpServer m_server;
+    int m_activePosts = 0;
+    int m_maxConcurrentPosts = 0;
+    int m_warmUpPostCount = 0;
+    QString m_lastWarmSystemPrompt;
+    bool m_holdAux = false;
+};
 
 static QString writeTempConfig(quint16 port)
 {
@@ -205,6 +302,99 @@ void TestOllamaBackend::streamThinkingOnlyRetriesOnceWithThinkFalse()
     loop.exec();
 
     QCOMPARE(fullText, QStringLiteral("Hello"));
+}
+
+void TestOllamaBackend::unitChangeDuringPreloadDoesNotCrashAndWarmsLatestPrompt()
+{
+    MockOllamaHttpServer server;
+    QVERIFY(server.listen());
+    server.setHoldAuxUntilReleased(true);
+
+    AppConfig config;
+    QVERIFY(config.load(writeTempConfig(server.serverPort())));
+
+    OllamaBackend backend(config);
+    QEventLoop loop;
+    bool startupDone = false;
+    connect(&backend, &OllamaBackend::startupSequenceFinished, &loop, [&](bool ok) {
+        startupDone = ok;
+        loop.quit();
+    });
+
+    const QString startupPrompt = QStringLiteral("STARTUP_PROMPT");
+    const QString unitPrompt = QStringLiteral("UNIT_CARD_PROMPT");
+    backend.runStartupSequence(QStringLiteral("eagle-clm"), QString(), startupPrompt);
+
+    QTimer::singleShot(30, &backend, [&]() {
+        backend.scheduleWarmUp(QStringLiteral("eagle-clm"), unitPrompt);
+        server.releaseAux();
+    });
+
+    QTimer::singleShot(15000, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QVERIFY(startupDone);
+    QCOMPARE(server.warmUpPostCount(), 1);
+    QCOMPARE(server.lastWarmSystemPrompt(), unitPrompt);
+    QCOMPARE(server.maxConcurrentPosts(), 1);
+    QCOMPARE(backend.auxConcurrentCount(), 0);
+}
+
+void TestOllamaBackend::rapidWarmUpsSerializeAndKeepLastPrompt()
+{
+    MockOllamaHttpServer server;
+    QVERIFY(server.listen());
+
+    AppConfig config;
+    QVERIFY(config.load(writeTempConfig(server.serverPort())));
+
+    OllamaBackend backend(config);
+    QEventLoop loop;
+    connect(&backend, &OllamaBackend::warmUpFinished, &loop, [&](bool) { loop.quit(); });
+
+    for (int i = 0; i < 5; ++i) {
+        backend.scheduleWarmUp(QStringLiteral("eagle-clm"),
+                               QStringLiteral("PROMPT_%1").arg(i));
+    }
+
+    QTimer::singleShot(10000, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QCOMPARE(server.warmUpPostCount(), 1);
+    QCOMPARE(server.lastWarmSystemPrompt(), QStringLiteral("PROMPT_4"));
+    QVERIFY(server.maxConcurrentPosts() <= 1);
+    QCOMPARE(server.maxConcurrentPosts(), 1);
+}
+
+void TestOllamaBackend::abortDuringAuxDoesNotCrashAndNextWarmUpWorks()
+{
+    MockOllamaHttpServer server;
+    QVERIFY(server.listen());
+    server.setHoldAuxUntilReleased(true);
+
+    AppConfig config;
+    QVERIFY(config.load(writeTempConfig(server.serverPort())));
+
+    OllamaBackend backend(config);
+    backend.scheduleWarmUp(QStringLiteral("eagle-clm"), QStringLiteral("FIRST"));
+
+    QTimer::singleShot(40, &backend, [&]() {
+        backend.abort();
+        server.releaseAux();
+        backend.scheduleWarmUp(QStringLiteral("eagle-clm"), QStringLiteral("SECOND"));
+    });
+
+    QEventLoop loop;
+    connect(&backend, &OllamaBackend::warmUpFinished, &loop, [&](bool ok) {
+        if (ok) {
+            loop.quit();
+        }
+    });
+    QTimer::singleShot(10000, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QCOMPARE(server.lastWarmSystemPrompt(), QStringLiteral("SECOND"));
+    QCOMPARE(backend.auxConcurrentCount(), 0);
 }
 
 QTEST_MAIN(TestOllamaBackend)

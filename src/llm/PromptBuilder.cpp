@@ -44,16 +44,22 @@ bool PromptBuilder::loadTemplates()
 
 QString PromptBuilder::loadTemplateFile(const QString &name) const
 {
+    auto normalize = [](QString text) {
+        text.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+        text.replace(QLatin1Char('\r'), QLatin1Char('\n'));
+        return text;
+    };
+
     const QString dataOverride = QDir(m_paths.dataDir()).filePath(QStringLiteral("prompts/") + name);
     if (QFile::exists(dataOverride)) {
         QFile file(dataOverride);
         if (file.open(QIODevice::ReadOnly)) {
-            return QString::fromUtf8(file.readAll());
+            return normalize(QString::fromUtf8(file.readAll()));
         }
     }
     QFile resource(QStringLiteral(":/prompts/") + name);
     if (resource.open(QIODevice::ReadOnly)) {
-        return QString::fromUtf8(resource.readAll());
+        return normalize(QString::fromUtf8(resource.readAll()));
     }
     return {};
 }
@@ -144,19 +150,30 @@ QString PromptBuilder::renderTail(const TurnInputs &inputs) const
     return TemplateEngine::render(m_tail, vars);
 }
 
-QString PromptBuilder::systemPrompt() const
+QString PromptBuilder::unitCacheKey(const UnitContext &unit) const
 {
-    UnitContext unit;
-    unit.hasUnit = false;
-    unit.registerShort = QStringLiteral("Grade 9 MYP");
+    if (!unit.hasUnit) {
+        return QStringLiteral("none");
+    }
+    return unit.packId + QLatin1Char('|') + unit.topicId;
+}
 
-    if (m_cachedSystem.isEmpty() || m_cachedUnitContext.hasUnit != unit.hasUnit) {
+QString PromptBuilder::systemPrompt(const UnitContext &unit) const
+{
+    UnitContext ctx = unit;
+    if (!ctx.hasUnit) {
+        ctx.registerShort = QStringLiteral("Grade 9 MYP");
+    }
+    const QString key = unitCacheKey(ctx);
+    if (m_cachedSystem.isEmpty() || m_cachedUnitKey != key) {
         TurnInputs dummy;
-        auto vars = baseVars(dummy, unit);
-        const QString core = TemplateEngine::render(m_systemSchool, vars);
-        const QString card = TemplateEngine::render(m_unitCardNone, vars);
-        m_cachedSystem = core + card;
-        m_cachedUnitContext = unit;
+        auto vars = baseVars(dummy, ctx);
+        const QString core = TemplateEngine::render(m_systemSchool, vars).trimmed();
+        const QString cardTpl = ctx.hasUnit ? m_unitCard : m_unitCardNone;
+        const QString card = TemplateEngine::render(cardTpl, vars).trimmed();
+        m_cachedSystem = card.isEmpty() ? core : core + QStringLiteral("\n\n") + card;
+        m_cachedUnitKey = key;
+        m_cachedUnitContext = ctx;
     }
     return m_cachedSystem;
 }
@@ -178,7 +195,7 @@ QVector<LlmMessage> PromptBuilder::buildMessages(const TurnInputs &inputs, const
     QVector<LlmMessage> messages;
     LlmMessage system;
     system.role = QStringLiteral("system");
-    system.content = systemPrompt();
+    system.content = systemPrompt(unit);
     messages.append(system);
     for (const LlmMessage &msg : history) {
         messages.append(msg);

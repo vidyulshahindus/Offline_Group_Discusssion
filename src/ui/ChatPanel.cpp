@@ -56,6 +56,24 @@ ChatPanel::ChatPanel(QWidget *parent)
     m_wordLimitCombo->setCurrentText(QStringLiteral("75"));
     m_wordLimitCombo->setToolTip(QStringLiteral("Maximum words the assistant should use in each reply"));
 
+    m_unitCombo = new QComboBox(header);
+    m_unitCombo->setObjectName(QStringLiteral("unitCombo"));
+    m_unitCombo->setMinimumWidth(180);
+    m_unitCombo->setToolTip(QStringLiteral("CLM unit pack"));
+    connect(m_unitCombo, &QComboBox::currentIndexChanged, this, &ChatPanel::unitSelectionChanged);
+
+    m_topicCombo = new QComboBox(header);
+    m_topicCombo->setObjectName(QStringLiteral("topicCombo"));
+    m_topicCombo->setMinimumWidth(160);
+    m_topicCombo->setToolTip(QStringLiteral("Current topic within the unit"));
+    connect(m_topicCombo, &QComboBox::currentIndexChanged, this, &ChatPanel::topicSelectionChanged);
+
+    m_periodCombo = new QComboBox(header);
+    m_periodCombo->setObjectName(QStringLiteral("periodCombo"));
+    m_periodCombo->setMinimumWidth(120);
+    m_periodCombo->setToolTip(QStringLiteral("CLM period (1–15)"));
+    connect(m_periodCombo, &QComboBox::currentIndexChanged, this, &ChatPanel::periodSelectionChanged);
+
     m_listenButton = new QPushButton(QStringLiteral("Listen"), header);
     m_listenButton->setObjectName(QStringLiteral("listenButton"));
     m_listenButton->setCheckable(true);
@@ -76,6 +94,9 @@ ChatPanel::ChatPanel(QWidget *parent)
     headerLayout->addWidget(m_languageCombo);
     headerLayout->addWidget(wordLimitLabel);
     headerLayout->addWidget(m_wordLimitCombo);
+    headerLayout->addWidget(m_unitCombo);
+    headerLayout->addWidget(m_topicCombo);
+    headerLayout->addWidget(m_periodCombo);
     headerLayout->addStretch(1);
     headerLayout->addWidget(m_statusLabel);
     headerLayout->addWidget(m_listenButton);
@@ -160,7 +181,12 @@ ChatPanel::ChatPanel(QWidget *parent)
     inputOuter->addLayout(inputRow);
     inputOuter->addWidget(m_stopButton, 0, Qt::AlignHCenter);
 
+    m_contextLabel = new QLabel(this);
+    m_contextLabel->setObjectName(QStringLiteral("contextLabel"));
+    m_contextLabel->setContentsMargins(20, 0, 20, 6);
+
     rootLayout->addWidget(header);
+    rootLayout->addWidget(m_contextLabel);
     rootLayout->addWidget(m_chatScroll, 1);
     rootLayout->addWidget(inputBar);
 }

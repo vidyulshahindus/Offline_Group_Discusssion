@@ -4,9 +4,34 @@
         <file>config/eagle_config.defaults.json</file>
     </qresource>
     <qresource prefix="/data/lang">
-        <file>data/lang/fillers.json</file>
-        <file>data/lang/hinglish.json</file>
-        <file>data/lang/languages.json</file>
+        <file alias="fillers.json">data/lang/fillers.json</file>
+        <file alias="hinglish.json">data/lang/hinglish.json</file>
+        <file alias="languages.json">data/lang/languages.json</file>
+    </qresource>
+    <qresource prefix="/data/clm">
+        <file alias="clm_phases.json">data/clm/clm_phases.json</file>
+        <file alias="concept_examples.json">data/clm/concept_examples.json</file>
+        <file alias="concept_rules.json">data/clm/concept_rules.json</file>
+        <file alias="ctq_examples.json">data/clm/ctq_examples.json</file>
+        <file alias="ctq_types.json">data/clm/ctq_types.json</file>
+        <file alias="steamh.json">data/clm/steamh.json</file>
+        <file alias="wisdom_steps.json">data/clm/wisdom_steps.json</file>
+    </qresource>
+    <qresource prefix="/data/ib">
+        <file alias="atl.json">data/ib/atl.json</file>
+        <file alias="command_terms.json">data/ib/command_terms.json</file>
+        <file alias="dp_subjects.json">data/ib/dp_subjects.json</file>
+        <file alias="global_contexts.json">data/ib/global_contexts.json</file>
+        <file alias="is_related_concepts.json">data/ib/is_related_concepts.json</file>
+        <file alias="learner_profile.json">data/ib/learner_profile.json</file>
+        <file alias="myp_criteria.json">data/ib/myp_criteria.json</file>
+        <file alias="myp_key_concepts.json">data/ib/myp_key_concepts.json</file>
+        <file alias="tok.json">data/ib/tok.json</file>
+    </qresource>
+    <qresource prefix="/data/units">
+        <file alias="dp-bio-g11-cells-form-function.json">units/dp-bio-g11-cells-form-function.json</file>
+        <file alias="myp-g7-delhi-sultanate.json">units/myp-g7-delhi-sultanate.json</file>
+        <file alias="myp-g9-industrial-revolution.json">units/myp-g9-industrial-revolution.json</file>
     </qresource>
     <qresource prefix="/prompts">
         <file alias="tail.txt">prompts/tail.txt</file>

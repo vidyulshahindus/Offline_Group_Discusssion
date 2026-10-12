@@ -1,0 +1,346 @@
+{
+  "schema": "eagle.unitpack.v1",
+  "id": "myp4-hist-g9-industrial-imperialism",
+  "title": "Industrial Revolution and Imperialism",
+  "programme": "MYP",
+  "grade": 9,
+  "subject": "History",
+  "subject_group": "Individuals and societies",
+  "campus": [
+    "IISH",
+    "IISP",
+    "IISB"
+  ],
+  "timeline": "",
+  "clm": {
+    "concept": "Innovation and Transformation",
+    "concept_meaning": "A new capability changes people and societies in ways nobody fully designed or controlled.",
+    "relevance": "You live inside a transformation right now, as phones and AI change how you learn, work and relate to people.",
+    "application": "Every new technology, from railways to the internet to AI, transforms work, power and daily life, often for people who never chose it.",
+    "wisdom_question": "Think of one capability you have developed recently. What did it transform in you, and in the people around you, whether you intended it or not?",
+    "transfers": [
+      {
+        "discipline": "Science",
+        "example": "Nuclear fission led to bombs, the Cold War and nuclear power, which nobody fully designed."
+      },
+      {
+        "discipline": "Technology",
+        "example": "AI is transforming medicine, education and employment in ways its designers did not intend."
+      },
+      {
+        "discipline": "Arts",
+        "example": "Romanticism was a response to what industrialisation destroyed."
+      },
+      {
+        "discipline": "Mathematics",
+        "example": "Compound growth turned small early advantages into huge industrial gaps."
+      }
+    ],
+    "rejected_concepts": [
+      {
+        "concept": "Progress and Its Cost",
+        "why": "Too evaluative; students stop at good or bad instead of the mechanism of transformation."
+      },
+      {
+        "concept": "Power and Exploitation",
+        "why": "Explains imperialism but not the Industrial Revolution, Romanticism, photography or Meiji Japan."
+      }
+    ],
+    "four_checks": {
+      "not_definitive": true,
+      "transfers_3_disciplines": true,
+      "wisdom_uncomfortable": true,
+      "needed_for_poc": true
+    },
+    "steamh": {
+      "lenses": [
+        {
+          "lens": "S",
+          "through_this_lens": "A scientific innovation does not cause consequences in a straight line; it branches and cascades.",
+          "poc_task": "Choose one scientific innovation and map every transformation it produced, intended and unintended, showing how the map branches.",
+          "land_it_back": "Draw the same branching map for one Industrial-era innovation."
+        },
+        {
+          "lens": "T",
+          "through_this_lens": "AI was built to process data and automate tasks, and it is already transforming fields its designers never targeted.",
+          "poc_task": "Map domains AI has transformed; for each, note who benefits, who bears the cost, and whether those affected chose it.",
+          "land_it_back": "Identify the AI transformation most like what industrialisation did to colonised economies."
+        },
+        {
+          "lens": "E",
+          "through_this_lens": "The railway was engineered to move goods faster, yet it transformed time, space, labour and empire.",
+          "poc_task": "Build an annotated model of one engineered system showing how it worked and every transformation beyond its stated function.",
+          "land_it_back": "Show the gap between design and transformation in one Industrial-era invention."
+        },
+        {
+          "lens": "A",
+          "through_this_lens": "Romantic and Realist art responded to transformations industrialisation had already produced.",
+          "poc_task": "Analyse one Romantic or Realist artwork as a response to a specific transformation, then create an original work responding to a transformation AI is producing now.",
+          "land_it_back": "Explain what your chosen artwork was mourning, resisting or documenting."
+        },
+        {
+          "lens": "M",
+          "through_this_lens": "Compound growth explains how Britain's early lead became an enormous gap within a few generations.",
+          "poc_task": "Model the growth of one industrial indicator, such as coal output or railway miles, and find where the rate of change accelerated.",
+          "land_it_back": "Overlay one indicator from a colonised economy and discuss who drove the change and who bore its cost."
+        }
+      ]
+    },
+    "topics": [
+      {
+        "id": "t1",
+        "title": "The Industrial Revolution in Britain and Japan",
+        "humanoid_lesson": true,
+        "summary": "Industrialisation began in Britain in the late eighteenth century with mechanised textile production, improved steam engines, factories and later railways, which drove rapid urbanisation and new working conditions. Japan industrialised later and very quickly after the Meiji Restoration of 1868, when the state deliberately adopted Western technology, railways, factories and mass education.",
+        "key_facts": "The Industrial Revolution began in Britain around 1760. Textile machines such as the spinning jenny and water frame moved spinning into factories. James Watt's improvements made steam engines far more efficient. Factories drew people into fast-growing towns with long hours, child labour and crowded housing. The Liverpool and Manchester Railway opened in 1830. After the Meiji Restoration in 1868, Japan's government drove rapid industrialisation by building railways, factories and a national education system.",
+        "key_terms": [
+          "Industrial Revolution",
+          "spinning jenny",
+          "water frame",
+          "steam engine",
+          "James Watt",
+          "factory system",
+          "urbanisation",
+          "child labour",
+          "railway",
+          "Meiji Restoration"
+        ],
+        "knowledge": [
+          "Britain had several advantages for early industrialisation, including coal and iron deposits, capital from trade, colonial markets and raw materials, and a political system that protected property and investment.",
+          "In Meiji Japan, industrialisation was led by the state, which sent missions abroad to study Western institutions and invited foreign experts to help build modern industries."
+        ],
+        "misconceptions": [
+          {
+            "text": "The Industrial Revolution happened suddenly; in fact it unfolded over many decades and unevenly across regions.",
+            "triggers": [
+              "suddenly",
+              "overnight",
+              "one invention"
+            ]
+          }
+        ],
+        "discussion_context": "New machines changed how people worked and lived, and who held power.",
+        "ctqs": [
+          {
+            "type": "what-if",
+            "command_term": "Explain",
+            "question": "If the efficient steam engine had first been developed in Mughal India rather than in Britain, explain how the pattern of nineteenth-century colonisation might have been different. Use at least two economic factors in your reasoning.",
+            "why_debatable": "Counterfactual reasoning allows several defensible outcomes based on different factors.",
+            "stall_breaker": "Is technology enough on its own, or do you also need coal, capital and markets?"
+          },
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Analyse",
+            "question": "Analyse how a Manchester factory owner, a child mill worker and a Bengal handloom weaver would each have judged whether the Industrial Revolution was progress.",
+            "why_debatable": "Each stakeholder experienced different benefits and costs.",
+            "stall_breaker": "Whose judgement do history textbooks usually record, and why?"
+          },
+          {
+            "type": "contemporary",
+            "command_term": "To what extent",
+            "question": "AI is transforming work today much as machines did in the 1800s. To what extent are today's societies better prepared than nineteenth-century Britain to protect the people who bear the cost of innovation?",
+            "why_debatable": "Evidence exists on both sides, from labour laws to job displacement.",
+            "stall_breaker": "Who are today's handloom weavers?"
+          }
+        ],
+        "practice": [
+          {
+            "question": "Explain two reasons why industrialisation began in Britain.",
+            "marks": 4,
+            "command_term": "Explain",
+            "markscheme": [
+              "identifies a valid reason such as coal and iron deposits",
+              "explains how that reason enabled industrial growth",
+              "identifies a second valid reason such as capital or colonial markets",
+              "explains how the second reason enabled industrial growth"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "t2",
+        "title": "Romanticism, Realism and photography",
+        "humanoid_lesson": true,
+        "summary": "Romantic artists and poets responded to industrialisation by celebrating nature, emotion and the individual. Realist artists later depicted ordinary working people as they were. Photography, announced in 1839, changed how events were recorded and challenged the role of painting.",
+        "key_facts": "Romanticism, from the late eighteenth to the mid nineteenth century, valued emotion, imagination and nature, partly in reaction to industrial cities and Enlightenment rationalism. Examples include the poetry of Wordsworth and the landscapes of Turner and Caspar David Friedrich. Realism, in the mid nineteenth century, showed everyday working life, as in the paintings of Courbet and Millet. The daguerreotype, announced in 1839, made photography practical and changed how people recorded events and saw the world.",
+        "key_terms": [
+          "Romanticism",
+          "Realism",
+          "Wordsworth",
+          "Turner",
+          "Caspar David Friedrich",
+          "Courbet",
+          "Millet",
+          "daguerreotype",
+          "photography"
+        ],
+        "knowledge": [
+          "Early photographs needed long exposures, so photographers often posed scenes; this means early photographs were not always neutral records."
+        ],
+        "misconceptions": [
+          {
+            "text": "Photographs are always objective; in fact photographers choose framing, timing and subjects.",
+            "triggers": [
+              "photograph",
+              "objective",
+              "truth",
+              "proof"
+            ]
+          }
+        ],
+        "discussion_context": "Artists respond to the transformations of their time, and new media change what counts as truth.",
+        "ctqs": [
+          {
+            "type": "what-if",
+            "command_term": "Explain",
+            "question": "Explain why many artists responded to industrialisation by painting nature and emotion rather than factories, using two Romantic works as evidence.",
+            "why_debatable": "Students can argue mourning, escape, protest or market demand.",
+            "stall_breaker": "If you painted your town today, would you paint the screens or the trees?"
+          },
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Analyse",
+            "question": "Photography seemed to record events as they really were. Analyse whether nineteenth-century photographs were more objective than paintings, considering who took them, how and why.",
+            "why_debatable": "Objectivity depends on framing, purpose and technology.",
+            "stall_breaker": "What did the photographer leave outside the frame?"
+          },
+          {
+            "type": "contemporary",
+            "command_term": "Evaluate",
+            "question": "Some people say AI-generated images threaten artists today in the same way photography was said to threaten painters. Evaluate this comparison.",
+            "why_debatable": "Painting adapted rather than disappeared, but AI may be different in scale.",
+            "stall_breaker": "What did painters do once photography could copy reality?"
+          }
+        ],
+        "practice": []
+      },
+      {
+        "id": "t3",
+        "title": "Causes and impact of imperialism",
+        "humanoid_lesson": true,
+        "summary": "Industrial economies sought raw materials, markets and strategic advantage, and new technologies such as steamships, the telegraph and modern weapons made overseas conquest easier. Ideas of racial superiority and a so-called civilising mission were used to justify empire. In colonised societies such as India, imperial rule transformed economies, including the decline of handloom textile production and the building of railways that mainly served colonial interests.",
+        "key_facts": "Causes of nineteenth-century imperialism included industrial demand for raw materials such as cotton, the search for new markets for manufactured goods, rivalry between European powers, nationalism, and racist ideas presented as a civilising mission. Technologies such as steamships, the telegraph and modern rifles made conquest and control easier. In India, cheap machine-made British cloth contributed to the decline of handloom weaving. India's first passenger railway ran from Bombay to Thane in 1853, and the railway network largely served colonial trade and administration.",
+        "key_terms": [
+          "imperialism",
+          "colonialism",
+          "raw materials",
+          "markets",
+          "civilising mission",
+          "deindustrialisation",
+          "handloom",
+          "railways in India",
+          "steamship",
+          "telegraph"
+        ],
+        "knowledge": [
+          "Historians debate how far imperialism was driven by economic motives, strategic rivalry, nationalism or ideology; most see a combination that varied by region and period."
+        ],
+        "misconceptions": [
+          {
+            "text": "Railways in colonial India were built mainly to help Indians travel; in fact their routes largely served colonial trade, administration and military needs, though Indians did use them widely.",
+            "triggers": [
+              "railways",
+              "for Indians",
+              "gift"
+            ]
+          }
+        ],
+        "discussion_context": "An innovation in one place can transform the lives of people far away who never chose it.",
+        "ctqs": [
+          {
+            "type": "contentious",
+            "command_term": "To what extent",
+            "question": "To what extent did industrialisation in Britain depend on the deindustrialisation of colonised economies such as India's textile industry?",
+            "why_debatable": "Historians disagree about the weight of colonial markets and resources compared with domestic factors.",
+            "stall_breaker": "Could Britain have industrialised without India's cotton and markets?"
+          },
+          {
+            "type": "ethical",
+            "command_term": "Discuss",
+            "question": "Railways in colonial India moved troops and cotton but also connected people across the subcontinent. Discuss whether an innovation imposed without consent can still be judged beneficial.",
+            "why_debatable": "It weighs outcomes against process and consent.",
+            "stall_breaker": "Who gets to decide whether it was beneficial: the builders or the people it was built on?"
+          },
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Evaluate",
+            "question": "Evaluate the claim that technology, more than ideology, was the main cause of nineteenth-century imperialism.",
+            "why_debatable": "Both technological capacity and ideas of superiority are well evidenced.",
+            "stall_breaker": "Can a weapon cause an empire, or only make it possible?"
+          }
+        ],
+        "practice": [
+          {
+            "question": "Evaluate the impact of railways on colonial India.",
+            "marks": 8,
+            "command_term": "Evaluate",
+            "markscheme": [
+              "identifies at least two impacts",
+              "supports each impact with specific evidence",
+              "considers different perspectives such as colonial officials, Indian traders and nationalists",
+              "weighs strengths and limitations of the railways' impact",
+              "reaches a clear, supported judgement"
+            ]
+          }
+        ]
+      }
+    ],
+    "reflection": {
+      "learning_goals": [
+        "I can explain causes of the Industrial Revolution in Britain and Japan.",
+        "I can analyse how different groups experienced industrial change.",
+        "I can evaluate causes and impacts of imperialism using evidence and perspectives.",
+        "I can use the command terms Explain, Analyse and Evaluate accurately."
+      ]
+    },
+    "sel_wisdom": {
+      "connect": "Which new tool or skill has changed your daily life most in the last year, and who else did it change?",
+      "deepen": "What transformation might AI bring to the work you hope to do one day, and what research would help you prepare?",
+      "wisdom": "When your choices benefit you but cost someone who never agreed to it, what do you owe them?",
+      "scenario_value": "Principled"
+    }
+  },
+  "ib": {
+    "myp": {
+      "key_concept": "Change",
+      "related_concepts": [
+        "Innovation and revolution",
+        "Causality (cause and consequence)",
+        "Perspective"
+      ],
+      "global_context": "Scientific and technical innovation",
+      "global_context_focus": "The impact of scientific and technological advances on communities and environments.",
+      "statement_of_inquiry": "Innovation can transform societies in ways its creators never designed, spreading benefits and costs unequally.",
+      "inquiry_questions": {
+        "factual": [
+          "What new technologies drove industrialisation in Britain and Japan?"
+        ],
+        "conceptual": [
+          "How does an innovation produce changes nobody fully designed?"
+        ],
+        "debatable": [
+          "Do those who innovate owe anything to those who bear the cost?"
+        ]
+      },
+      "atl": [
+        "Critical-thinking skills",
+        "Transfer skills"
+      ],
+      "criteria": [
+        "A",
+        "D"
+      ]
+    },
+    "dp": null,
+    "learner_profile": [
+      "Principled",
+      "Reflective"
+    ]
+  },
+  "authoring": {
+    "status": "reviewed",
+    "author": "Spec sample",
+    "reviewed_by": "",
+    "updated": "2026-10-08"
+  }
+}

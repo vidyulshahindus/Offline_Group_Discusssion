@@ -1,0 +1,70 @@
+{
+  "types": [
+    {
+      "id": "what-if",
+      "label": "What if",
+      "description": "Changes one condition and asks for reasoned consequences.",
+      "typical_terms": [
+        "Explain",
+        "Predict",
+        "Analyse"
+      ]
+    },
+    {
+      "id": "ethical",
+      "label": "Ethical",
+      "description": "Asks what ought to be done when values conflict.",
+      "typical_terms": [
+        "Discuss",
+        "Evaluate",
+        "To what extent",
+        "Justify"
+      ]
+    },
+    {
+      "id": "contentious",
+      "label": "Contentious / controversial",
+      "description": "A claim on which informed people genuinely disagree.",
+      "typical_terms": [
+        "To what extent",
+        "Evaluate",
+        "Discuss"
+      ]
+    },
+    {
+      "id": "contemporary",
+      "label": "Contemporary",
+      "description": "Connects the topic to a current real-world development.",
+      "typical_terms": [
+        "Analyse",
+        "Evaluate",
+        "Recommend"
+      ]
+    },
+    {
+      "id": "multiple-perspectives",
+      "label": "Multiple perspectives",
+      "description": "Asks how different stakeholders would judge the same issue.",
+      "typical_terms": [
+        "Analyse",
+        "Compare and contrast",
+        "Examine"
+      ]
+    }
+  ],
+  "good_question_criteria": [
+    "Uncovers content through discussion",
+    "Creates disagreement or multiple defensible views",
+    "Requires evidence, data, quotation or subject reasoning",
+    "Progresses towards evaluation, justification or design",
+    "Uses IB command terms purposefully"
+  ],
+  "bad_question_signs": [
+    "Asks for recall or definitions",
+    "Has one obvious answer",
+    "Can be answered by a quick search",
+    "Does not require evidence or reasoning",
+    "Does not build towards assessment writing"
+  ],
+  "simple_rule": "Reject questions that students can answer in less than a minute without using subject knowledge."
+}

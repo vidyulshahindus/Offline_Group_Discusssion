@@ -1,0 +1,97 @@
+{
+  "Biology": {
+    "first_assessment": 2025,
+    "themes": [
+      "Unity and diversity",
+      "Form and function",
+      "Interaction and interdependence",
+      "Continuity and change"
+    ],
+    "levels_of_organization": [
+      "Molecules",
+      "Cells",
+      "Organisms",
+      "Ecosystems"
+    ]
+  },
+  "Chemistry": {
+    "first_assessment": 2025,
+    "organisers": [
+      "Structure 1. Models of the particulate nature of matter",
+      "Structure 2. Models of bonding and structure",
+      "Structure 3. Classification of matter",
+      "Reactivity 1. What drives chemical reactions?",
+      "Reactivity 2. How much, how fast and how far?",
+      "Reactivity 3. What are the mechanisms of chemical change?"
+    ]
+  },
+  "Physics": {
+    "first_assessment": 2025,
+    "themes": [
+      "A. Space, time and motion",
+      "B. The particulate nature of matter",
+      "C. Wave behaviour",
+      "D. Fields",
+      "E. Nuclear and quantum physics"
+    ]
+  },
+  "Environmental systems and societies": {
+    "first_assessment": 2026,
+    "key_concepts": [
+      "Perspectives",
+      "Systems",
+      "Sustainability"
+    ],
+    "topics": [
+      "Foundation",
+      "Ecology",
+      "Biodiversity and conservation",
+      "Water",
+      "Land",
+      "Atmosphere and climate change",
+      "Natural resources",
+      "Human populations and urban systems"
+    ]
+  },
+  "Economics": {
+    "key_concepts": [
+      "Scarcity",
+      "Choice",
+      "Efficiency",
+      "Equity",
+      "Economic well-being",
+      "Sustainability",
+      "Change",
+      "Interdependence",
+      "Intervention"
+    ]
+  },
+  "Business management": {
+    "key_concepts": [
+      "Change",
+      "Creativity",
+      "Ethics",
+      "Sustainability"
+    ]
+  },
+  "History": {
+    "first_assessment": 2028,
+    "concepts": [
+      "Cause and consequence",
+      "Continuity and change",
+      "Perspectives",
+      "Significance"
+    ]
+  },
+  "Psychology": {
+    "concepts": [
+      "Bias",
+      "Causality",
+      "Change",
+      "Measurement",
+      "Perspective",
+      "Responsibility"
+    ]
+  },
+  "_grades": "DP subjects are graded 1-7. Eagle never predicts or awards grades."
+}

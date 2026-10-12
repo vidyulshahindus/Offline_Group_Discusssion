@@ -16,6 +16,7 @@ class Paths;
 class ServiceSupervisor;
 class SttEngine;
 class TurnSpeechController;
+class CurriculumController;
 
 class MainWindow : public QMainWindow
 {
@@ -27,6 +28,8 @@ public:
     ~MainWindow() override;
 
     TurnSpeechController *turnSpeech() const { return m_turnSpeech; }
+
+    QString systemPromptForStartup() const;
 
 private slots:
     void onSendClicked();
@@ -52,6 +55,12 @@ private slots:
     void onTurnFirstAudio(int turnId, qint64 t1Ms);
     void onWordBudgetReached(int turnId);
     void onTurnSpeechError(const QString &message);
+    void onUnitComboChanged(int index);
+    void onTopicComboChanged(int index);
+    void onPeriodComboChanged(int index);
+    void onCurriculumContextChanged(const UnitContext &context, bool unitOrTopicChanged);
+    void onCurriculumWarmupRequested(const QString &systemPrompt, const QString &unitTitle);
+    void onWarmUpFinished(bool ok);
     void showReadinessPanel();
     void showMetricsOverlay();
 
@@ -66,6 +75,12 @@ private:
     void showSpeechText(const QString &text);
     void populateModels(const QStringList &models);
     void wirePaths(const Paths &paths);
+    void populateCurriculumUi();
+    void refreshTopicComboForUnit(const QString &packId);
+    void refreshContextLine();
+    void resetChatForNewUnit(const QString &unitTitle);
+    void applySttBiasFromUnit();
+    bool sendTurnIfReady();
     SessionLanguage currentLanguage() const;
     EagleMode currentMode() const;
 
@@ -82,6 +97,7 @@ private:
     SttEngine *m_stt = nullptr;
     PiperSpeaker *m_piper = nullptr;
     TurnSpeechController *m_turnSpeech = nullptr;
+    CurriculumController *m_curriculum = nullptr;
 
     QString m_speechPrefix;
     QString m_lastUserTurnMessage;
@@ -90,4 +106,5 @@ private:
     UnitContext m_unitContext;
     LlmMetrics m_pendingLlmMetrics;
     bool m_pendingTurnOpen = false;
+    bool m_retrySendAfterWarm = false;
 };

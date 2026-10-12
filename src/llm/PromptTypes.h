@@ -14,6 +14,8 @@ enum class SessionLanguage {
 
 struct UnitContext {
     bool hasUnit = false;
+    QString packId;
+    QString topicId;
     QString programme = QStringLiteral("MYP");
     QString subject = QStringLiteral("General");
     QString grade = QStringLiteral("9");

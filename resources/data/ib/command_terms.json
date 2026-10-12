@@ -1,0 +1,301 @@
+{
+  "terms": [
+    {
+      "term": "Define",
+      "tier": 1,
+      "definition": "Give the precise meaning of a word, phrase, concept or physical quantity.",
+      "shape": "give the precise meaning in one sentence, then one short example"
+    },
+    {
+      "term": "State",
+      "tier": 1,
+      "definition": "Give a specific name, value or other brief answer without explanation or calculation.",
+      "shape": "give the brief answer directly"
+    },
+    {
+      "term": "List",
+      "tier": 1,
+      "definition": "Give a sequence of brief answers with no explanation.",
+      "shape": "name the items briefly"
+    },
+    {
+      "term": "Identify",
+      "tier": 1,
+      "definition": "Provide an answer from a number of possibilities. Recognize and state briefly a distinguishing fact or feature.",
+      "shape": "pick out the answer and name its distinguishing feature"
+    },
+    {
+      "term": "Outline",
+      "tier": 1,
+      "definition": "Give a brief account or summary.",
+      "shape": "give a brief summary of the main points"
+    },
+    {
+      "term": "Describe",
+      "tier": 1,
+      "definition": "Give a detailed account.",
+      "shape": "give a detailed account of what happens or what it is like"
+    },
+    {
+      "term": "Summarize",
+      "tier": 1,
+      "definition": "Abstract a general theme or major point(s).",
+      "shape": "state the general theme or main points"
+    },
+    {
+      "term": "Calculate",
+      "tier": 1,
+      "spoken": false,
+      "definition": "Obtain a numerical answer showing the relevant stages in the working.",
+      "shape": "give the numerical answer with the key steps"
+    },
+    {
+      "term": "Estimate",
+      "tier": 1,
+      "spoken": false,
+      "definition": "Obtain an approximate value.",
+      "shape": "give an approximate value and how you got it"
+    },
+    {
+      "term": "Measure",
+      "tier": 1,
+      "spoken": false,
+      "definition": "Obtain a value for a quantity.",
+      "shape": "give the measured value"
+    },
+    {
+      "term": "Label",
+      "tier": 1,
+      "spoken": false,
+      "definition": "Add labels to a diagram.",
+      "shape": "name the parts"
+    },
+    {
+      "term": "Draw",
+      "tier": 1,
+      "spoken": false,
+      "definition": "Represent by means of a labelled, accurate diagram or graph, using a pencil. A ruler (straight edge) should be used for straight lines. Diagrams should be drawn to scale. Graphs should have points correctly plotted (if appropriate) and joined in a straight line or smooth curve.",
+      "shape": "describe what the diagram must show"
+    },
+    {
+      "term": "Annotate",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Add brief notes to a diagram or graph.",
+      "shape": "add brief notes to each key feature"
+    },
+    {
+      "term": "Sketch",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Represent by means of a diagram or graph (labelled as appropriate). The sketch should give a general idea of the required shape or relationship, and should include relevant features.",
+      "shape": "describe the general shape and key features"
+    },
+    {
+      "term": "Construct",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Display information in a diagrammatic or logical form.",
+      "shape": "organise the information into a clear logical form"
+    },
+    {
+      "term": "Plot",
+      "tier": 1,
+      "spoken": false,
+      "definition": "Mark the position of points on a diagram.",
+      "shape": "mark the points"
+    },
+    {
+      "term": "Distinguish",
+      "tier": 2,
+      "definition": "Make clear the differences between two or more concepts or items.",
+      "shape": "make the key differences clear"
+    },
+    {
+      "term": "Explain",
+      "tier": 2,
+      "definition": "Give a detailed account including reasons or causes.",
+      "shape": "give reasons or causes and link each cause to its effect"
+    },
+    {
+      "term": "Analyse",
+      "tier": 2,
+      "definition": "Break down in order to bring out the essential elements or structure.",
+      "shape": "break the issue into its key parts and show how they relate"
+    },
+    {
+      "term": "Apply",
+      "tier": 2,
+      "definition": "Use an idea, equation, principle, theory or law in relation to a given problem or issue.",
+      "shape": "use the principle on this specific situation"
+    },
+    {
+      "term": "Use",
+      "tier": 2,
+      "definition": "Apply knowledge or rules to put theory into practice.",
+      "shape": "put the idea into practice on this case"
+    },
+    {
+      "term": "Compare",
+      "tier": 2,
+      "definition": "Give an account of the similarities between two (or more) items or situations, referring to both (all) of them throughout.",
+      "shape": "show the similarities, referring to both throughout"
+    },
+    {
+      "term": "Contrast",
+      "tier": 2,
+      "definition": "Give an account of the differences between two (or more) items or situations, referring to both (all) of them throughout.",
+      "shape": "show the differences, referring to both throughout"
+    },
+    {
+      "term": "Compare and contrast",
+      "tier": 2,
+      "definition": "Give an account of similarities and differences between two (or more) items or situations, referring to both (all) of them throughout.",
+      "shape": "show similarities and differences, referring to both throughout"
+    },
+    {
+      "term": "Interpret",
+      "tier": 2,
+      "definition": "Use knowledge and understanding to recognize trends and draw conclusions from given information.",
+      "shape": "recognise the trend and draw a conclusion from it"
+    },
+    {
+      "term": "Deduce",
+      "tier": 2,
+      "definition": "Reach a conclusion from the information given.",
+      "shape": "reason step by step from the information to a conclusion"
+    },
+    {
+      "term": "Determine",
+      "tier": 2,
+      "definition": "Obtain the only possible answer.",
+      "shape": "reason to the single correct answer"
+    },
+    {
+      "term": "Predict",
+      "tier": 2,
+      "definition": "Give an expected result.",
+      "shape": "state the expected result and the reasoning behind it"
+    },
+    {
+      "term": "Suggest",
+      "tier": 2,
+      "definition": "Propose a solution, hypothesis or other possible answer.",
+      "shape": "propose a plausible answer and say why it could work"
+    },
+    {
+      "term": "Comment",
+      "tier": 2,
+      "definition": "Give a judgment based on a given statement or result of a calculation.",
+      "shape": "give a reasoned judgement on the statement"
+    },
+    {
+      "term": "Demonstrate",
+      "tier": 2,
+      "definition": "Make clear by reasoning or evidence, illustrating with examples or practical application.",
+      "shape": "make it clear with reasoning and an example"
+    },
+    {
+      "term": "Investigate",
+      "tier": 2,
+      "definition": "Observe, study, or make a detailed and systematic examination, in order to establish facts and reach new conclusions.",
+      "shape": "say how you would examine it systematically and what it would show"
+    },
+    {
+      "term": "Explore",
+      "tier": 2,
+      "definition": "Undertake a systematic process of discovery.",
+      "shape": "open up the possibilities systematically"
+    },
+    {
+      "term": "Derive",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Manipulate a mathematical relationship to give a new equation or relationship.",
+      "shape": "show the steps from one relationship to the new one"
+    },
+    {
+      "term": "Show",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Give the steps in a calculation or derivation.",
+      "shape": "give the steps"
+    },
+    {
+      "term": "Show that",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Obtain the required result (possibly using information given) without the formality of proof.",
+      "shape": "reach the required result step by step"
+    },
+    {
+      "term": "Solve",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Obtain the answer(s) using algebraic and/or numerical and/or graphical methods.",
+      "shape": "obtain the answer with the method"
+    },
+    {
+      "term": "Document",
+      "tier": 2,
+      "spoken": false,
+      "definition": "Credit sources of information used by referencing (or citing) following a recognized referencing system.",
+      "shape": "credit the sources properly"
+    },
+    {
+      "term": "Examine",
+      "tier": 3,
+      "definition": "Consider an argument or concept in a way that uncovers the assumptions and interrelationships of the issue.",
+      "shape": "uncover the assumptions and connections behind the issue"
+    },
+    {
+      "term": "Discuss",
+      "tier": 3,
+      "definition": "Offer a considered and balanced review that includes a range of arguments, factors or hypotheses. Opinions or conclusions should be presented clearly and supported by appropriate evidence.",
+      "shape": "give a balanced review of several arguments with evidence, then a clear conclusion"
+    },
+    {
+      "term": "Evaluate",
+      "tier": 3,
+      "definition": "Make an appraisal by weighing up the strengths and limitations.",
+      "shape": "weigh strengths and limitations, then give a clear judgement"
+    },
+    {
+      "term": "Justify",
+      "tier": 3,
+      "definition": "Give valid reasons or evidence to support an answer or conclusion.",
+      "shape": "state a position and give valid reasons or evidence for it"
+    },
+    {
+      "term": "To what extent",
+      "tier": 3,
+      "definition": "Consider the merits or otherwise of an argument or concept. Opinions and conclusions should be presented clearly and supported with appropriate evidence and sound argument.",
+      "shape": "weigh the merits and limits of the claim, then say how far you agree and why"
+    },
+    {
+      "term": "Recommend",
+      "tier": 3,
+      "definition": "Present an advisable course of action with appropriate supporting evidence/reason in relation to a given situation, problem or issue.",
+      "shape": "propose a course of action and support it with evidence"
+    },
+    {
+      "term": "Formulate",
+      "tier": 3,
+      "definition": "Express precisely and systematically the relevant concept(s) or argument(s).",
+      "shape": "state the argument precisely and systematically"
+    },
+    {
+      "term": "Synthesize",
+      "tier": 3,
+      "definition": "Combine different ideas in order to create new understanding.",
+      "shape": "combine the ideas into a new understanding"
+    },
+    {
+      "term": "Design",
+      "tier": 3,
+      "definition": "Produce a plan, simulation or model.",
+      "shape": "propose a plan or model step by step"
+    }
+  ],
+  "matching": "Match the longest term first (\"Compare and contrast\" before \"Compare\", \"Show that\" before \"Show\"). Match case-insensitively at the start of a sentence or after a comma/colon. \"Discuss the extent to which\" maps to \"To what extent\" + \"Discuss\" (tier 3)."
+}

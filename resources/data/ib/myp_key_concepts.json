@@ -1,0 +1,39 @@
+{
+  "key_concepts": [
+    "Aesthetics",
+    "Change",
+    "Communication",
+    "Communities",
+    "Connections",
+    "Creativity",
+    "Culture",
+    "Development",
+    "Form",
+    "Global interactions",
+    "Identity",
+    "Logic",
+    "Perspective",
+    "Relationships",
+    "Systems",
+    "Time, place and space"
+  ],
+  "by_subject_group": {
+    "Individuals and societies": [
+      "Change",
+      "Global interactions",
+      "Systems",
+      "Time, place and space"
+    ],
+    "Sciences": [
+      "Change",
+      "Relationships",
+      "Systems"
+    ]
+  },
+  "is_definitions": {
+    "Change": "A conversion, transformation, or movement from one form, state or value to another. Inquiry into change involves understanding and evaluating causes, processes and consequences.",
+    "Global interactions": "Focuses on the connections between individuals and communities, and their relationships with built and natural environments, from the perspective of the world as a whole.",
+    "Systems": "Sets of interacting or interdependent components. Systems provide structure and order in human, natural and built environments.",
+    "Time, place and space": "The absolute or relative position of people, objects and ideas; how we construct and use our understanding of location (where and when)."
+  }
+}

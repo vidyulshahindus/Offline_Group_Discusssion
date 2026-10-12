@@ -24,6 +24,10 @@ public:
     QComboBox *modeCombo() const { return m_modeCombo; }
     QComboBox *languageCombo() const { return m_languageCombo; }
     QComboBox *wordLimitCombo() const { return m_wordLimitCombo; }
+    QComboBox *unitCombo() const { return m_unitCombo; }
+    QComboBox *topicCombo() const { return m_topicCombo; }
+    QComboBox *periodCombo() const { return m_periodCombo; }
+    QLabel *contextLabel() const { return m_contextLabel; }
     QComboBox *micCombo() const { return m_micCombo; }
     QComboBox *speakerCombo() const { return m_speakerCombo; }
     QLabel *statusLabel() const { return m_statusLabel; }
@@ -55,6 +59,9 @@ signals:
     void refreshDevicesRequested();
     void recordToggled();
     void listenToggleRequested();
+    void unitSelectionChanged(int index);
+    void topicSelectionChanged(int index);
+    void periodSelectionChanged(int index);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -64,6 +71,10 @@ private:
     QComboBox *m_modeCombo = nullptr;
     QComboBox *m_languageCombo = nullptr;
     QComboBox *m_wordLimitCombo = nullptr;
+    QComboBox *m_unitCombo = nullptr;
+    QComboBox *m_topicCombo = nullptr;
+    QComboBox *m_periodCombo = nullptr;
+    QLabel *m_contextLabel = nullptr;
     QComboBox *m_micCombo = nullptr;
     QComboBox *m_speakerCombo = nullptr;
     QLabel *m_statusLabel = nullptr;

@@ -1,0 +1,125 @@
+{
+  "phases": [
+    {
+      "period": 1,
+      "phase": "cra",
+      "name": "Concept, Relevance & Application + Unit Introduction + Short Assessment + Intro to STEAM-H",
+      "topic": null,
+      "mode": "concept",
+      "eagle_role": "Introduce concept, relevance and application; pose the wisdom question; quick check"
+    },
+    {
+      "period": 2,
+      "phase": "steamh",
+      "name": "STEAM-H",
+      "topic": null,
+      "mode": "steamh",
+      "eagle_role": "Lens explanations, PoC hints, personal application"
+    },
+    {
+      "period": 3,
+      "phase": "steamh",
+      "name": "STEAM-H",
+      "topic": null,
+      "mode": "steamh",
+      "eagle_role": "Lens explanations, PoC hints, personal application"
+    },
+    {
+      "period": 4,
+      "phase": "sdl",
+      "name": "Self-Directed Learning",
+      "topic": 1,
+      "mode": "doubt",
+      "eagle_role": "Answer doubts, check understanding, flag misconceptions"
+    },
+    {
+      "period": 5,
+      "phase": "humanoid_genai",
+      "name": "Humanoid & GenAI Discussion",
+      "topic": 1,
+      "mode": "discussion",
+      "eagle_role": "GenAI discussion after the humanoid lesson"
+    },
+    {
+      "period": 6,
+      "phase": "lab",
+      "name": "Lab / Experiential",
+      "topic": null,
+      "mode": "doubt",
+      "eagle_role": "Support only"
+    },
+    {
+      "period": 7,
+      "phase": "drill",
+      "name": "Drill & Practice",
+      "topic": 1,
+      "mode": "practice",
+      "eagle_role": "Command-term coaching and markscheme feedback"
+    },
+    {
+      "period": 8,
+      "phase": "sdl",
+      "name": "Self-Directed Learning",
+      "topic": 2,
+      "mode": "doubt",
+      "eagle_role": "Answer doubts, check understanding, flag misconceptions"
+    },
+    {
+      "period": 9,
+      "phase": "humanoid_genai",
+      "name": "Humanoid & GenAI Discussion",
+      "topic": 2,
+      "mode": "discussion",
+      "eagle_role": "GenAI discussion after the humanoid lesson"
+    },
+    {
+      "period": 10,
+      "phase": "drill",
+      "name": "Drill & Practice",
+      "topic": 2,
+      "mode": "practice",
+      "eagle_role": "Command-term coaching and markscheme feedback"
+    },
+    {
+      "period": 11,
+      "phase": "sdl",
+      "name": "Self-Directed Learning",
+      "topic": 3,
+      "mode": "doubt",
+      "eagle_role": "Answer doubts, check understanding, flag misconceptions"
+    },
+    {
+      "period": 12,
+      "phase": "humanoid_genai",
+      "name": "Humanoid & GenAI Discussion",
+      "topic": 3,
+      "mode": "discussion",
+      "eagle_role": "GenAI discussion after the humanoid lesson"
+    },
+    {
+      "period": 13,
+      "phase": "drill",
+      "name": "Drill & Practice",
+      "topic": 3,
+      "mode": "practice",
+      "eagle_role": "Command-term coaching and markscheme feedback"
+    },
+    {
+      "period": 14,
+      "phase": "reflection",
+      "name": "Reflection",
+      "topic": null,
+      "mode": "reflection",
+      "eagle_role": "Learning goals, reflection, gap identification, intervention"
+    },
+    {
+      "period": 15,
+      "phase": "sel_wisdom",
+      "name": "Generative AI - SEL & Wisdom",
+      "topic": null,
+      "mode": "sel",
+      "eagle_role": "Connect to personal experience, deepen understanding, cultivate wisdom"
+    }
+  ],
+  "notes": "Assessment happens outside the 15 periods. Drill & Practice: teacher selects 3-4 Apply/Analyse/Transfer questions; 20 min timed writing at ~1.5 min per mark; 10-12 min self/peer marking against the markscheme; command-term focus; no content re-teaching. SDL: max 15 min engaging content with multiple perspectives, checks understanding, teacher intervention."
+}

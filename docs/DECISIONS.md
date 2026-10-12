@@ -1,5 +1,17 @@
 # Architecture decisions
 
+## M4 (part A)
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-10-12 | **Ollama aux:** One aux HTTP request at a time (`Show` / `preload` / warm-up queue). `scheduleWarmUp` coalesces rapid unit/topic changes; startup and in-flight aux are not aborted on curriculum change. `safeAbortStream` / `safeAbortAux` null the member, disconnect, then `abort()` + `deleteLater()`. Startup warm-up uses `MainWindow::systemPromptForStartup()` after QSettings restore (no duplicate warm-up). | §9.3 rule 5; fix 0xc0000005 from re-entrant `QNetworkReply::finished`. |
+| 2026-10-12 | **System prompt layout:** `core.trimmed() + "\n\n" + unit_card.trimmed()`; template files normalized to `\n` on load. | Readable logs; stable bytes on CRLF checkouts. |
+| 2026-10-12 | **Curriculum data:** Appendix B/C JSON under `resources/data/clm` and `resources/data/ib`; three sample unit packs under `resources/units` (D.2–D.4). QRC aliases match filenames (`:/data/clm/clm_phases.json`). Extraction script: `tools/extract_curriculum_data.py`. | §23 M4; fixes doubled QRC paths. |
+| 2026-10-12 | **Unit library:** Built-in samples (always listed) plus `paths.units_dir` packs with `authoring.status` `approved` or `reviewed`. D.5 domain pack excluded until M9. | §15.5 Library. |
+| 2026-10-12 | **System prompt:** `PromptBuilder::systemPrompt(unit)` caches on `packId|topicId`; unit card from A.2 when `has_unit`, else `unit_card_none`. Re-warm on unit/topic change; period stored for UI only (mode-by-period is M5). | §9.3 rule 5, §9.4. |
+| 2026-10-12 | **STEAM-H lens defaults** in `steamh.json` for non–Sciences/I&S groups are teacher-confirm defaults per spec B.5 note. | Appendix B.5. |
+| 2026-10-12 | **CtqLinter** not wired in M4 part A; `UnitPack` structural validation only (approved 3×3 CTQ counts enforced, not linter errors). | Defer to M4 follow-up / Prep. |
+
 ## M3
 
 | Date | Decision | Rationale |

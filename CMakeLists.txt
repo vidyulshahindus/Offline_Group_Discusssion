@@ -35,6 +35,17 @@ set(EAGLEGD_UI_SOURCES
     src/ui/MetricsOverlay.cpp
 )
 
+set(EAGLEGD_CURRICULUM_SOURCES
+    src/curriculum/JsonResource.cpp
+    src/curriculum/UnitPack.cpp
+    src/curriculum/UnitPackValidator.cpp
+    src/curriculum/ClmReference.cpp
+    src/curriculum/IbReference.cpp
+    src/curriculum/UnitLibrary.cpp
+    src/curriculum/UnitContextBuilder.cpp
+    src/curriculum/CurriculumController.cpp
+)
+
 set(EAGLEGD_CORE_SOURCES
     src/core/Metrics.cpp
     src/core/HindiFeminineFixer.cpp
@@ -68,6 +79,7 @@ set(EAGLEGD_PROTOTYPE_SOURCES
 qt_add_executable(EagleGD
     ${EAGLEGD_APP_SOURCES}
     ${EAGLEGD_UI_SOURCES}
+    ${EAGLEGD_CURRICULUM_SOURCES}
     ${EAGLEGD_CORE_SOURCES}
     ${EAGLEGD_TTS_SOURCES}
     ${EAGLEGD_STT_SOURCES}
@@ -76,7 +88,7 @@ qt_add_executable(EagleGD
     resources/resources.qrc
 )
 
-target_include_directories(EagleGD PRIVATE src src/app src/ui src/llm src/core src/tts src/stt)
+target_include_directories(EagleGD PRIVATE src src/app src/ui src/llm src/core src/curriculum src/tts src/stt)
 
 target_link_libraries(EagleGD PRIVATE Qt6::Widgets Qt6::Network Qt6::Multimedia)
 
@@ -124,7 +136,17 @@ set(EAGLE_TEST_OLLAMA_SOURCES
     src/llm/OllamaBackend.cpp
 )
 
-eagle_add_unit_test(tst_promptbuilder "${EAGLE_TEST_PROMPT_SOURCES}")
+set(EAGLE_TEST_PROMPT_CURRICULUM_SOURCES
+    ${EAGLE_TEST_PROMPT_SOURCES}
+    src/curriculum/JsonResource.cpp
+    src/curriculum/IbReference.cpp
+    src/curriculum/UnitContextBuilder.cpp
+    src/curriculum/UnitPack.cpp
+    src/curriculum/UnitPackValidator.cpp
+)
+
+eagle_add_unit_test(tst_promptbuilder "${EAGLE_TEST_PROMPT_CURRICULUM_SOURCES}")
+target_include_directories(tst_promptbuilder PRIVATE src/curriculum)
 eagle_add_unit_test(tst_historymanager "${EAGLE_TEST_HISTORY_SOURCES}")
 eagle_add_unit_test(tst_ollamabackend "${EAGLE_TEST_OLLAMA_SOURCES}")
 
@@ -153,3 +175,12 @@ set(EAGLE_TEST_LANG_SOURCES
 )
 eagle_add_unit_test(tst_languageservice "${EAGLE_TEST_LANG_SOURCES}")
 target_include_directories(tst_languageservice PRIVATE src/app)
+
+set(EAGLE_TEST_UNITPACK_SOURCES
+    src/curriculum/JsonResource.cpp
+    src/curriculum/UnitPack.cpp
+    src/curriculum/UnitPackValidator.cpp
+    resources/resources.qrc
+)
+eagle_add_unit_test(tst_unitpack "${EAGLE_TEST_UNITPACK_SOURCES}")
+target_include_directories(tst_unitpack PRIVATE src/curriculum)

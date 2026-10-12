@@ -1,0 +1,19 @@
+{
+  "steps": [
+    {
+      "id": "connect",
+      "name": "Connect to personal experiences",
+      "goal": "Help them connect the unit's key ideas to their own lives and the world around them."
+    },
+    {
+      "id": "deepen",
+      "name": "Cultivate deeper understanding",
+      "goal": "Help them consider future applications of these ideas and areas of research they could explore."
+    },
+    {
+      "id": "wisdom",
+      "name": "Cultivate wisdom",
+      "goal": "Help them explore the ethical, philosophical or cultural implications of what they learned."
+    }
+  ]
+}

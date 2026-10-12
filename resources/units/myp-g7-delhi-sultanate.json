@@ -1,0 +1,232 @@
+{
+  "schema": "eagle.unitpack.v1",
+  "id": "myp2-hist-g7-delhi-sultanate",
+  "title": "Rise and Fall of Empires: the Delhi Sultanate",
+  "programme": "MYP",
+  "grade": 7,
+  "subject": "History",
+  "subject_group": "Individuals and societies",
+  "campus": [
+    "IISH",
+    "IISP",
+    "IISB"
+  ],
+  "timeline": "",
+  "benchmark_ref": {
+    "file": "History_Benchmarks_G6-12_2026-27.json",
+    "grade": 7,
+    "unit_number": 1,
+    "topic_codes": []
+  },
+  "clm": {
+    "concept": "Power and Legitimacy",
+    "concept_meaning": "Having power is not the same as being accepted as the rightful holder of power.",
+    "relevance": "Every group you belong to, from a sports team to a class, has people with power, and you constantly judge whether they deserve it.",
+    "application": "Governments, companies and even online communities rise or fall depending on whether people accept their right to lead.",
+    "wisdom_question": "When you have power over others, even a little, what makes you deserve it?",
+    "transfers": [
+      {
+        "discipline": "Politics",
+        "example": "Elections give governments legitimacy that force alone cannot."
+      },
+      {
+        "discipline": "Business",
+        "example": "A company loses customers when people stop trusting it."
+      },
+      {
+        "discipline": "Science",
+        "example": "Scientific claims gain authority through peer review, not just through who says them."
+      }
+    ],
+    "four_checks": {
+      "not_definitive": true,
+      "transfers_3_disciplines": true,
+      "wisdom_uncomfortable": true,
+      "needed_for_poc": true
+    },
+    "topics": [
+      {
+        "id": "t1",
+        "title": "How the Delhi Sultanate was founded",
+        "humanoid_lesson": true,
+        "summary": "After Muhammad of Ghor's conquests in northern India, his general Qutbuddin Aibak became the first ruler of the Delhi Sultanate in 1206. Rulers built power through military strength, loyal nobles and new buildings that displayed their authority.",
+        "key_facts": "The Delhi Sultanate began in 1206 when Qutbuddin Aibak, a general of Muhammad of Ghor, became ruler at Delhi. Aibak began building the Qutb Minar, which was completed by later rulers. Sultans relied on armies, loyal nobles and land revenue to hold power. Several dynasties ruled the Sultanate over about three hundred years.",
+        "key_terms": [
+          "Delhi Sultanate",
+          "Qutbuddin Aibak",
+          "Muhammad of Ghor",
+          "Qutb Minar",
+          "sultan",
+          "dynasty",
+          "nobles"
+        ],
+        "knowledge": [],
+        "misconceptions": [],
+        "discussion_context": "New rulers must convince people they deserve to rule, not just defeat their rivals.",
+        "ctqs": [
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Explain",
+            "question": "Explain why a new ruler like Qutbuddin Aibak would build huge monuments such as the Qutb Minar instead of spending only on his army.",
+            "why_debatable": "Monuments can be read as faith, power, propaganda or legitimacy.",
+            "stall_breaker": "What message does a giant tower send to people who see it every day?"
+          },
+          {
+            "type": "what-if",
+            "command_term": "Analyse",
+            "question": "Analyse what might have happened to the Sultanate if its nobles had stopped being loyal to the sultan.",
+            "why_debatable": "Students can argue different chains of consequences.",
+            "stall_breaker": "Who really held power: the sultan or the people who obeyed him?"
+          },
+          {
+            "type": "contemporary",
+            "command_term": "Discuss",
+            "question": "Today, governments gain legitimacy through elections. Discuss whether power won by force, as many medieval rulers did, can ever become legitimate over time.",
+            "why_debatable": "History shows both acceptance and rejection of rulers who began with force.",
+            "stall_breaker": "How long would people need to accept a ruler before it counts as legitimate?"
+          }
+        ],
+        "practice": []
+      },
+      {
+        "id": "t2",
+        "title": "Governing the Sultanate: Alauddin Khilji",
+        "humanoid_lesson": true,
+        "summary": "Alauddin Khilji, who ruled from 1296 to 1316, defended the Sultanate against Mongol invasions and introduced strict market regulations in Delhi to keep prices low for his large army.",
+        "key_facts": "Alauddin Khilji ruled the Delhi Sultanate from 1296 to 1316. He kept a large standing army to defend against Mongol invasions. To pay and supply this army, he controlled prices of grain and other goods in Delhi's markets and punished traders who cheated.",
+        "key_terms": [
+          "Alauddin Khilji",
+          "market reforms",
+          "price control",
+          "Mongol invasions",
+          "standing army"
+        ],
+        "knowledge": [],
+        "misconceptions": [],
+        "discussion_context": "Rulers often justify strict control by pointing to danger.",
+        "ctqs": [
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Explain",
+            "question": "Alauddin Khilji controlled market prices in Delhi. Explain how a peasant, a merchant and a soldier might each have judged whether his rule was fair.",
+            "why_debatable": "Different groups gained and lost from price control.",
+            "stall_breaker": "Who paid the price for cheap grain?"
+          },
+          {
+            "type": "ethical",
+            "command_term": "Evaluate",
+            "question": "Evaluate whether Alauddin Khilji's strict control of Delhi's markets was justified by the threat of Mongol invasion, using evidence from his reign.",
+            "why_debatable": "Security and freedom pull in opposite directions.",
+            "stall_breaker": "Do governments today use danger to justify control?"
+          },
+          {
+            "type": "contemporary",
+            "command_term": "To what extent",
+            "question": "To what extent should a government today control the prices of food during a crisis, as Alauddin Khilji did, even if farmers and traders lose out?",
+            "why_debatable": "Economists and citizens disagree about price controls.",
+            "stall_breaker": "What happens to farmers if prices are kept low?"
+          }
+        ],
+        "practice": []
+      },
+      {
+        "id": "t3",
+        "title": "Why empires decline: Muhammad bin Tughlaq and after",
+        "humanoid_lesson": true,
+        "summary": "Muhammad bin Tughlaq, who ruled from 1325 to 1351, tried bold experiments such as moving the capital from Delhi to Daulatabad and introducing token copper currency, which caused hardship and lost him support. Later, rebellions and Timur's invasion of 1398 weakened the Sultanate.",
+        "key_facts": "Muhammad bin Tughlaq ruled from 1325 to 1351. He moved the capital from Delhi to Daulatabad in the Deccan, forcing many people to move, and later moved it back. He introduced token copper coins, but forgery became widespread and the scheme was withdrawn. Rebellions grew in the provinces. In 1398 Timur invaded and sacked Delhi, further weakening the Sultanate.",
+        "key_terms": [
+          "Muhammad bin Tughlaq",
+          "Daulatabad",
+          "token currency",
+          "rebellion",
+          "Timur",
+          "decline"
+        ],
+        "knowledge": [],
+        "misconceptions": [],
+        "discussion_context": "Bold ideas can fail if people do not trust the leader carrying them out.",
+        "ctqs": [
+          {
+            "type": "contentious",
+            "command_term": "Evaluate",
+            "question": "Muhammad bin Tughlaq moved the capital and introduced token currency. Evaluate whether these were failures of the ideas themselves or failures of how they were carried out.",
+            "why_debatable": "Token currency works in modern economies, so the idea and execution can be separated.",
+            "stall_breaker": "We use paper money today. Why did copper tokens fail then?"
+          },
+          {
+            "type": "what-if",
+            "command_term": "Explain",
+            "question": "Explain how losing people's trust can weaken an empire even when its army is still strong.",
+            "why_debatable": "Students can argue economic, political and social mechanisms.",
+            "stall_breaker": "Can you force people to trust you?"
+          },
+          {
+            "type": "multiple-perspectives",
+            "command_term": "Discuss",
+            "question": "Discuss whether the decline of the Delhi Sultanate was caused more by its rulers' decisions or by outside invasions.",
+            "why_debatable": "Internal and external causes both have strong evidence.",
+            "stall_breaker": "Would Timur's invasion have succeeded against a united Sultanate?"
+          }
+        ],
+        "practice": []
+      }
+    ],
+    "reflection": {
+      "learning_goals": [
+        "I can explain how rulers of the Delhi Sultanate gained and kept power.",
+        "I can analyse why people accepted or rejected a ruler.",
+        "I can evaluate causes of the Sultanate's decline."
+      ]
+    },
+    "sel_wisdom": {
+      "connect": "Think of a time someone had power over you, like a captain or a monitor. What made you accept or resist them?",
+      "deepen": "How might leaders earn trust in online communities and games?",
+      "wisdom": "When you have power over others, even a little, what makes you deserve it?",
+      "scenario_value": "Principled"
+    }
+  },
+  "ib": {
+    "myp": {
+      "key_concept": "Change",
+      "related_concepts": [
+        "Governance",
+        "Causality (cause and consequence)",
+        "Perspective"
+      ],
+      "global_context": "Orientation in space and time",
+      "global_context_focus": "Turning points in humankind; the relationships between individuals and civilizations.",
+      "statement_of_inquiry": "Rulers keep power only as long as people accept their right to rule.",
+      "inquiry_questions": {
+        "factual": [
+          "How was the Delhi Sultanate founded?"
+        ],
+        "conceptual": [
+          "What makes power legitimate?"
+        ],
+        "debatable": [
+          "Can power won by force ever become legitimate?"
+        ]
+      },
+      "atl": [
+        "Critical-thinking skills",
+        "Communication skills"
+      ],
+      "criteria": [
+        "A",
+        "D"
+      ]
+    },
+    "dp": null,
+    "learner_profile": [
+      "Principled",
+      "Open-minded"
+    ]
+  },
+  "authoring": {
+    "status": "reviewed",
+    "author": "Spec sample",
+    "reviewed_by": "",
+    "updated": "2026-10-08"
+  }
+}

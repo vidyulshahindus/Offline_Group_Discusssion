@@ -19,7 +19,7 @@ public:
     QStringList validationErrors() const;
     bool loadTemplates();
 
-    QString systemPrompt() const;
+    QString systemPrompt(const UnitContext &unit = UnitContext()) const;
     QString buildUserTurn(const TurnInputs &inputs, const UnitContext &unit) const;
     QVector<LlmMessage> buildMessages(const TurnInputs &inputs, const UnitContext &unit,
                                       const QVector<LlmMessage> &history) const;
@@ -42,6 +42,9 @@ private:
     QString m_unitCardNone;
     QString m_doubt;
     QString m_tail;
+    QString unitCacheKey(const UnitContext &unit) const;
+
     mutable QString m_cachedSystem;
+    mutable QString m_cachedUnitKey;
     mutable UnitContext m_cachedUnitContext;
 };

@@ -1,0 +1,58 @@
+{
+  "definition": "A concept is what the topic is an example of: a 2-4 word transferable phrase that transfers across at least 3 disciplines, connects to the student's own life, recurs across units and years, and carries a wisdom layer (an uncomfortable personal question).",
+  "mistakes": [
+    {
+      "id": 1,
+      "name": "Naming the topic as the concept",
+      "example": "The concept of this unit is the Industrial Revolution.",
+      "fix": "The Industrial Revolution is the unit; the concept is Innovation and Transformation."
+    },
+    {
+      "id": 2,
+      "name": "Going too broad",
+      "example": "The concept is change.",
+      "fix": "A concept that excludes nothing explains nothing."
+    },
+    {
+      "id": 3,
+      "name": "Going too narrow",
+      "example": "The concept is mechanisation.",
+      "fix": "It only lives inside the Industrial Revolution and does not transfer."
+    },
+    {
+      "id": 4,
+      "name": "No wisdom layer",
+      "example": "The concept is innovation.",
+      "fix": "The personal question 'be innovative!' is shallow; go deeper until the question is uncomfortable."
+    },
+    {
+      "id": 5,
+      "name": "Different concepts for units that share one",
+      "example": "Power and Legitimacy fits Turkish Invasions, WWI and Colonial Imperialism.",
+      "fix": "That is the point: concepts recur and build."
+    }
+  ],
+  "four_checks": [
+    "Can AI give a definitive answer? (It must not.)",
+    "Does it transfer across three disciplines?",
+    "Is the wisdom question uncomfortable?",
+    "Would a student need this concept to complete the PoC?"
+  ],
+  "too_broad_words": [
+    "change",
+    "systems",
+    "life",
+    "nature",
+    "society",
+    "development",
+    "relationships",
+    "power",
+    "culture"
+  ],
+  "crit": {
+    "context": "I am a teacher at an IB school. I am planning a unit and I need help identifying the transferable concept - the big idea - that sits underneath my topic. I am not looking for a topic description. I am looking for the deeper principle that this topic is an example of, which can transfer across at least three other disciplines and connect to students' personal lives.",
+    "role": "Act as an expert curriculum designer with deep knowledge of concept-based learning, the IB framework, and interdisciplinary education. You understand the difference between a topic (what students study) and a concept (what the topic is an example of).",
+    "interview": "Before giving me any suggestions, interview me. Ask me one question at a time - up to three questions - to understand my unit, my students, and what I want them to walk away understanding about the world.",
+    "task": "Based on my answers, suggest three possible concepts for this unit - each expressed as a 2-4 word transferable phrase. For each concept, tell me: (1) what other disciplines it appears in, (2) what personal wisdom question it generates for students, and (3) what would make it the wrong concept to choose."
+  }
+}

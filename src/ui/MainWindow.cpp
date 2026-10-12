@@ -18,8 +18,12 @@
 #include "chatbubble.h"
 #include "piperspeaker.h"
 #include "SttEngine.h"
+#include "CurriculumController.h"
+#include "UnitContextBuilder.h"
+#include "UnitPack.h"
 
 #include <QAction>
+#include <QJsonArray>
 #include <QAudioDevice>
 #include <QComboBox>
 #include <QElapsedTimer>
@@ -55,10 +59,6 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
     m_piper = new PiperSpeaker(this);
     wirePaths(paths);
 
-    m_unitContext.hasUnit = false;
-    m_unitContext.registerShort = QStringLiteral("Grade 9 MYP");
-    m_unitContext.concept.clear();
-
     m_chat = new ChatPanel(this);
     setCentralWidget(m_chat);
     setWindowTitle(QStringLiteral("Eagle GD"));
@@ -88,12 +88,38 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
     connect(m_chat, &ChatPanel::refreshDevicesRequested, this, &MainWindow::onRefreshMicsClicked);
     connect(m_chat, &ChatPanel::recordToggled, this, &MainWindow::onRecordClicked);
     connect(m_chat, &ChatPanel::listenToggleRequested, this, &MainWindow::onListenToggle);
+    connect(m_chat, &ChatPanel::unitSelectionChanged, this, &MainWindow::onUnitComboChanged);
+    connect(m_chat, &ChatPanel::topicSelectionChanged, this, &MainWindow::onTopicComboChanged);
+    connect(m_chat, &ChatPanel::periodSelectionChanged, this, &MainWindow::onPeriodComboChanged);
+    connect(m_chat->languageCombo(), &QComboBox::currentIndexChanged, this,
+            [this](int) { refreshContextLine(); });
+    connect(m_chat->modeCombo(), &QComboBox::currentIndexChanged, this,
+            [this](int) { refreshContextLine(); });
+    connect(m_chat->wordLimitCombo(), &QComboBox::currentTextChanged, this,
+            [this](const QString &) { refreshContextLine(); });
+
+    if (m_llm.prompts) {
+        m_curriculum = new CurriculumController(m_paths, m_llm.prompts.get(), this);
+        connect(m_curriculum, &CurriculumController::contextChanged, this,
+                &MainWindow::onCurriculumContextChanged);
+        connect(m_curriculum, &CurriculumController::warmupRequested, this,
+                &MainWindow::onCurriculumWarmupRequested);
+        populateCurriculumUi();
+        m_curriculum->restoreSettings();
+        populateCurriculumUi();
+        m_unitContext = m_curriculum->currentContext();
+        refreshContextLine();
+    } else {
+        m_unitContext = UnitContextBuilder::none();
+    }
 
     if (m_llm.backend) {
         connect(m_llm.backend.get(), &OllamaBackend::token, this, &MainWindow::onLlmToken);
         connect(m_llm.backend.get(), &OllamaBackend::finished, this, &MainWindow::onLlmFinished);
         connect(m_llm.backend.get(), &OllamaBackend::failed, this, &MainWindow::onLlmFailed);
         connect(m_llm.backend.get(), &OllamaBackend::probed, this, &MainWindow::onModelsProbed);
+        connect(m_llm.backend.get(), &OllamaBackend::warmUpFinished, this,
+                &MainWindow::onWarmUpFinished);
     }
 
     connect(m_stt, &SttEngine::listeningChanged, this, &MainWindow::onRecordingChanged);
@@ -121,7 +147,23 @@ MainWindow::MainWindow(const AppConfig &config, const Paths &paths, ServiceSuper
                                             "Make sure Ollama is running on this machine."));
 }
 
-MainWindow::~MainWindow() = default;
+MainWindow::~MainWindow()
+{
+    if (m_curriculum) {
+        m_curriculum->saveSettings();
+    }
+}
+
+QString MainWindow::systemPromptForStartup() const
+{
+    if (!m_llm.prompts) {
+        return {};
+    }
+    if (m_curriculum) {
+        return m_llm.prompts->systemPrompt(m_curriculum->currentContext());
+    }
+    return m_llm.prompts->systemPrompt(m_unitContext);
+}
 
 SessionLanguage MainWindow::currentLanguage() const
 {
@@ -193,15 +235,31 @@ void MainWindow::onSendClicked()
     if (!m_llm.backend) {
         return;
     }
+    if (m_curriculum && m_curriculum->isWarming()) {
+        m_retrySendAfterWarm = true;
+        m_chat->statusLabel()->setText(
+            QStringLiteral("Waiting — Eagle is preparing this unit…"));
+        return;
+    }
+    if (!sendTurnIfReady()) {
+        return;
+    }
+}
+
+bool MainWindow::sendTurnIfReady()
+{
+    if (!m_llm.backend) {
+        return false;
+    }
     if (m_llm.backend->isBusy()) {
         m_chat->statusLabel()->setText(
             QStringLiteral("Eagle is still loading the model — try again in a moment."));
-        return;
+        return false;
     }
 
     const QString text = m_chat->input()->toPlainText().trimmed();
     if (text.isEmpty()) {
-        return;
+        return false;
     }
 
     m_chat->input()->clear();
@@ -240,6 +298,7 @@ void MainWindow::onSendClicked()
     m_turnTimer.start();
     m_turnSpeech->markRequestSent();
     m_llm.backend->start(req);
+    return true;
 }
 
 void MainWindow::onNewChatClicked()
@@ -630,4 +689,194 @@ void MainWindow::onSpeechStatus(const QString &status)
     const bool locked = status == QStringLiteral("Transcribing…") || m_stt->isListening() || llmBusy;
     m_chat->recordButton()->setDisabled(llmBusy || status == QStringLiteral("Transcribing…"));
     m_chat->sendButton()->setDisabled(locked);
+}
+
+void MainWindow::populateCurriculumUi()
+{
+    if (!m_curriculum) {
+        return;
+    }
+    m_chat->unitCombo()->blockSignals(true);
+    m_chat->topicCombo()->blockSignals(true);
+    m_chat->periodCombo()->blockSignals(true);
+
+    m_chat->unitCombo()->clear();
+    m_chat->unitCombo()->addItem(QStringLiteral("No unit"), QString());
+    for (const UnitLibraryEntry &entry : m_curriculum->library().entries()) {
+        m_chat->unitCombo()->addItem(entry.displayLabel, entry.pack.id());
+    }
+
+    m_chat->periodCombo()->clear();
+    for (const ClmPeriodInfo &period : m_curriculum->clm().periods()) {
+        m_chat->periodCombo()->addItem(
+            QStringLiteral("P%1 %2").arg(period.period).arg(period.name), period.period);
+    }
+    const int periodIdx =
+        m_chat->periodCombo()->findData(m_curriculum->period());
+    if (periodIdx >= 0) {
+        m_chat->periodCombo()->setCurrentIndex(periodIdx);
+    }
+
+    if (m_curriculum->hasUnitSelected()) {
+        const int unitIdx =
+            m_chat->unitCombo()->findData(m_curriculum->selectedPackId());
+        if (unitIdx >= 0) {
+            m_chat->unitCombo()->setCurrentIndex(unitIdx);
+            refreshTopicComboForUnit(m_curriculum->selectedPackId());
+            const int topicIdx = m_chat->topicCombo()->findData(m_curriculum->selectedTopicIndex());
+            if (topicIdx >= 0) {
+                m_chat->topicCombo()->setCurrentIndex(topicIdx);
+            }
+        }
+    } else {
+        m_chat->unitCombo()->setCurrentIndex(0);
+        m_chat->topicCombo()->clear();
+        m_chat->topicCombo()->setEnabled(false);
+    }
+
+    m_chat->unitCombo()->blockSignals(false);
+    m_chat->topicCombo()->blockSignals(false);
+    m_chat->periodCombo()->blockSignals(false);
+}
+
+void MainWindow::refreshTopicComboForUnit(const QString &packId)
+{
+    m_chat->topicCombo()->blockSignals(true);
+    m_chat->topicCombo()->clear();
+    const UnitPack pack = m_curriculum->library().packById(packId);
+    for (int i = 0; i < pack.topicCount(); ++i) {
+        m_chat->topicCombo()->addItem(pack.topicTitle(i), i);
+    }
+    m_chat->topicCombo()->setEnabled(!pack.id().isEmpty());
+    m_chat->topicCombo()->blockSignals(false);
+}
+
+void MainWindow::refreshContextLine()
+{
+    if (!m_curriculum || !m_chat->contextLabel()) {
+        return;
+    }
+    const QString mode = m_chat->modeCombo()->currentText();
+    const QString lang = m_chat->languageCombo()->currentText();
+    const QString limit = m_chat->wordLimitCombo()->currentText();
+    m_chat->contextLabel()->setText(m_curriculum->contextLine(mode, lang, limit));
+}
+
+void MainWindow::resetChatForNewUnit(const QString &unitTitle)
+{
+    m_turnSpeech->stop();
+    m_piper->stop();
+    if (m_llm.backend && m_llm.backend->isStreamInFlight()) {
+        m_llm.backend->abortActiveTurn();
+    }
+    m_llm.history->reset();
+    m_chat->clearConversation();
+    m_chat->addMessageBubble(
+        ChatRole::Assistant,
+        QStringLiteral("New unit: %1").arg(unitTitle));
+    m_chat->statusLabel()->setText(QStringLiteral("Ready"));
+}
+
+void MainWindow::applySttBiasFromUnit()
+{
+    QStringList terms = m_config.sttBiasTerms();
+    if (m_unitContext.hasUnit && m_curriculum) {
+        const UnitPack pack = m_curriculum->library().packById(m_unitContext.packId);
+        const QJsonArray topics =
+            pack.document().value(QStringLiteral("clm")).toObject().value(QStringLiteral("topics")).toArray();
+        for (const QJsonValue &value : topics) {
+            const QJsonObject topic = value.toObject();
+            if (topic.value(QStringLiteral("id")).toString() != m_unitContext.topicId) {
+                continue;
+            }
+            for (const QJsonValue &term : topic.value(QStringLiteral("key_terms")).toArray()) {
+                terms.append(term.toString());
+            }
+            break;
+        }
+    }
+    m_stt->setBiasTerms(terms);
+}
+
+void MainWindow::onUnitComboChanged(int index)
+{
+    if (!m_curriculum || index < 0) {
+        return;
+    }
+    const QString packId = m_chat->unitCombo()->itemData(index).toString();
+    if (packId.isEmpty()) {
+        m_curriculum->selectNoUnit();
+        m_chat->topicCombo()->clear();
+        m_chat->topicCombo()->setEnabled(false);
+        return;
+    }
+    refreshTopicComboForUnit(packId);
+    m_curriculum->selectPack(packId, 0);
+}
+
+void MainWindow::onTopicComboChanged(int index)
+{
+    if (!m_curriculum || index < 0 || !m_curriculum->hasUnitSelected()) {
+        return;
+    }
+    const int topicIndex = m_chat->topicCombo()->itemData(index).toInt();
+    m_curriculum->selectPack(m_curriculum->selectedPackId(), topicIndex);
+}
+
+void MainWindow::onPeriodComboChanged(int index)
+{
+    if (!m_curriculum || index < 0) {
+        return;
+    }
+    m_curriculum->setPeriod(m_chat->periodCombo()->itemData(index).toInt());
+    refreshContextLine();
+}
+
+void MainWindow::onCurriculumContextChanged(const UnitContext &context, bool unitOrTopicChanged)
+{
+    m_unitContext = context;
+    applySttBiasFromUnit();
+    refreshContextLine();
+    if (unitOrTopicChanged) {
+        const QString title =
+            context.hasUnit ? context.unitTitle : QStringLiteral("General");
+        resetChatForNewUnit(title);
+    }
+}
+
+void MainWindow::onCurriculumWarmupRequested(const QString &systemPrompt, const QString &unitTitle)
+{
+    if (!m_llm.backend) {
+        return;
+    }
+    if (m_llm.backend->isStreamInFlight() || m_pendingTurnOpen) {
+        m_llm.backend->abortActiveTurn();
+        m_turnSpeech->stop();
+        m_piper->stop();
+        m_pendingTurnOpen = false;
+        refreshTurnChrome();
+    }
+    m_curriculum->setWarming(true);
+    m_chat->statusLabel()->setText(
+        QStringLiteral("Preparing Eagle for %1…").arg(unitTitle));
+    m_llm.backend->scheduleWarmUp(m_chat->modelCombo()->currentText(), systemPrompt);
+}
+
+void MainWindow::onWarmUpFinished(bool ok)
+{
+    if (m_curriculum) {
+        m_curriculum->setWarming(false);
+    }
+    if (!ok) {
+        m_chat->statusLabel()->setText(QStringLiteral("Warm-up failed — try again"));
+        return;
+    }
+    if (m_retrySendAfterWarm) {
+        m_retrySendAfterWarm = false;
+        sendTurnIfReady();
+        return;
+    }
+    if (!m_llm.backend || !m_llm.backend->isBusy()) {
+        m_chat->statusLabel()->setText(QStringLiteral("Ready"));
+    }
 }

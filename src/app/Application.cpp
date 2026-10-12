@@ -122,9 +122,9 @@ int Application::run()
                              if (!ok || !m_llm->prompts) {
                                  return;
                              }
-                             m_llm->backend->runStartupSequence(m_config->llmModel(),
-                                                                m_config->llmFallbackModel(),
-                                                                m_llm->prompts->systemPrompt());
+                             m_llm->backend->runStartupSequence(
+                                 m_config->llmModel(), m_config->llmFallbackModel(),
+                                 m_mainWindow->systemPromptForStartup());
                          });
         m_llm->backend->probe();
     }

@@ -1,0 +1,34 @@
+{
+  "global_contexts": [
+    {
+      "name": "Identities and relationships",
+      "question": "Who am I? Who are we?",
+      "focus": "Identity; beliefs and values; personal, physical, mental, social and spiritual health; human relationships including families, friends, communities and cultures; what it means to be human."
+    },
+    {
+      "name": "Orientation in space and time",
+      "question": "What is the meaning of 'where' and 'when'?",
+      "focus": "Personal histories; homes and journeys; turning points in humankind; discoveries, explorations and migrations of humankind; the relationships between, and the interconnectedness of, individuals and civilizations, from personal, local and global perspectives."
+    },
+    {
+      "name": "Personal and cultural expression",
+      "question": "What is the nature and purpose of creative expression?",
+      "focus": "The ways in which we discover and express ideas, feelings, nature, culture, beliefs and values; the ways in which we reflect on, extend and enjoy our creativity; our appreciation of the aesthetic."
+    },
+    {
+      "name": "Scientific and technical innovation",
+      "question": "How do we understand the worlds in which we live?",
+      "focus": "The natural world and its laws; the interaction between people and the natural world; how humans use their understanding of scientific principles; the impact of scientific and technological advances on communities and environments; the impact of environments on human activity; how humans adapt environments to their needs."
+    },
+    {
+      "name": "Globalization and sustainability",
+      "question": "How is everything connected?",
+      "focus": "The interconnectedness of human-made systems and communities; the relationship between local and global processes; how local experiences mediate the global; the opportunities and tensions provided by world-interconnectedness; the impact of decision-making on humankind and the environment."
+    },
+    {
+      "name": "Fairness and development",
+      "question": "What are the consequences of our common humanity?",
+      "focus": "Rights and responsibilities; the relationship between communities; sharing finite resources with other people and with other living things; access to equal opportunities; peace and conflict resolution."
+    }
+  ]
+}
