@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eaglegd"
+version = "0.1.0"
+description = "Eagle Group Discussion — offline classroom assistant (Ollama + curriculum + speech)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "See LICENSE" }
+authors = [{ name = "Indus International School" }]
+dependencies = [
+  "PySide6>=6.6",
+  "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-qt>=4.4",
+]
+
+[project.scripts]
+eaglegd = "eaglegd.app.main:main"
+
+[tool.setuptools.packages.find]
+include = ["eaglegd*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
+pythonpath = ["."]

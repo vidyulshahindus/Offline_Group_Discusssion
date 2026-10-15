@@ -1,0 +1,2 @@
+[console_scripts]
+eaglegd = eaglegd.app.main:main

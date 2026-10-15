@@ -1,5 +1,12 @@
 # Changelog
 
+## Python / Linux port (2026-10-15)
+
+- Reimplemented EagleGD as a **Python 3.10+ / PySide6** package under `eaglegd/` (app, ui, llm, core, stt, tts, curriculum).
+- Linux-first packaging: `pyproject.toml`, `requirements.txt`, `scripts/build_linux.sh`, `scripts/run_linux.sh`.
+- Former C++ / CMake tree moved to `cpp_archive/` for reference.
+- pytest suite in `tests/python/` (prompt builder, Hindi fixer, template engine, unit packs).
+
 ## M4 — Curriculum layer, part A (2026-10-12)
 
 ### M4 bugfix — Ollama aux crash on unit change / restore
