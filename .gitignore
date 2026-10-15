@@ -47,6 +47,12 @@ vidyul/
 **/credentials.json
 **/*secret*
 **/logs/
+tts_cache/
+generated_speech/
+
+# Local patch dumps (not for GitHub)
+*.patch
+m4b_m5a.patch
 
 # Python / friend project caches (if present)
 __pycache__/

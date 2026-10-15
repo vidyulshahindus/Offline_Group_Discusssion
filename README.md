@@ -1,280 +1,193 @@
-# Ollama Chat (Qt 6)
+# EagleGD
 
-A ChatGPT-style desktop chat client for local [Ollama](https://ollama.com) models, built with **Qt 6** and **C++** on Windows.
+**Eagle Group Discussion** — a Qt 6 / C++ desktop app for classroom use with local [Ollama](https://ollama.com) LLMs, curriculum-aligned unit packs (IB / CLM), speech input (whisper.cpp server), and speech output (Piper).
 
-## Features
+Built for Windows (MinGW) as the primary dev target; Linux presets exist in `CMakePresets.json` but are not fully verified on every milestone.
 
-- Dark chat UI with streaming replies
-- Model picker: **ornith:9b** (default) and **qwen3.5:4b**
-- Word limit options: 50 / 75 / 100 / 125 / 150 / 200
-- Speech-to-text with **whisper.cpp** (microphone picker + live-ish transcription)
-- Text-to-speech with **Piper** (speaker picker + Listen toggle)
-- New chat, Stop generating / Stop speaking, Enter to send, Shift+Enter for newline
-- Exit confirmation
+## What works today (milestones)
+
+| Area | Status |
+|------|--------|
+| **M0–M1** | App shell, Ollama streaming, prompts, history, warm-up, metrics overlay |
+| **M2** | Sentence streaming TTS, fillers, soft word limit (spoken text = on-screen text) |
+| **M3** | Listen / VAD / whisper-server STT, barge-in, mic level, language lock |
+| **M4a** | Unit packs, unit/topic/period UI, system prompt unit card, safe Ollama aux queue |
+| **M4b** | BM25 `Retriever` — optional `Notes:` in doubt turns from unit knowledge |
+
+Planned next: CLM discussion modes (M5+). See `docs/EAGLE_BUILD_SPEC.md` and `docs/CHANGELOG.md`.
 
 ## Repository layout
 
 ```text
-src/                 Qt C++ sources
-resources/           styles and Qt resources
-tools/whisper/       whisper.cpp (binaries + model — download locally)
-tools/piper/         Piper TTS (binaries + voice — download locally)
+src/                 Application (app, ui, llm, core, stt, tts, curriculum)
+resources/           Config defaults, prompts, curriculum JSON, QRC assets
+model/               Ollama Modelfile for eagle-clm (weights live in Ollama’s store)
+docs/                CHANGELOG, DECISIONS, build spec
+tests/unit/          Qt Test targets (run via CTest)
+tools/               Local whisper-server, Piper, models (not in git — see below)
 CMakeLists.txt
-README.md
+CMakePresets.json
 ```
 
-Large model/voice binaries are **not** meant to be committed to GitHub (see `.gitignore`). Download them after clone.
+## Prerequisites
 
----
+1. **Git** — https://git-scm.com/download/win  
+2. **Ollama** — https://ollama.com/download (default `http://127.0.0.1:11434`)  
+3. **Qt 6.9+** with **MinGW 64-bit**, **CMake**, **Ninja** (Qt Online Installer)  
+4. **LLM** — create/pull a model; defaults in `resources/config/eagle_config.defaults.json` use **`eagle-clm`** (see [Ollama model](#ollama-model)).  
+5. **whisper-server** + GGML model under `tools/whisper/` (see [Speech tools](#speech-tools-not-in-git))  
+6. **Piper** + voice ONNX under `tools/piper/` (see [Speech tools](#speech-tools-not-in-git))
 
-## Before you create the `.exe` (dependencies)
+## Build (Windows, CMake presets)
 
-Install these on Windows first.
+Set Qt on your PATH or pass `CMAKE_PREFIX_PATH` once per configure.
 
-### 1. Git (for GitHub)
-
-- Download: https://git-scm.com/download/win  
-- During setup, keep **“Git from the command line and also from 3rd-party software”**.
-
-### 2. Ollama (required to chat)
-
-1. Install from https://ollama.com/download  
-2. Confirm the service is running (tray icon / `http://127.0.0.1:11434`).  
-3. Pull models you will use:
+**PowerShell** (adjust Qt path if needed):
 
 ```powershell
-ollama pull ornith:9b
-ollama pull qwen3.5:4b
+cd "C:\Users\softw\Past_Projects\Eagle Group Discussion"
+$env:CMAKE_PREFIX_PATH = "C:\Qt\6.9.1\mingw_64"
+$env:PATH = "C:\Qt\Tools\mingw1310_64\bin;C:\Qt\6.9.1\mingw_64\bin;C:\Qt\Tools\CMake_64\bin;C:\Qt\Tools\Ninja;$env:PATH"
+
+cmake --preset windows-mingw-release
+cmake --build --preset windows-mingw-release
+ctest --preset windows-mingw-release --output-on-failure
 ```
 
-4. Check:
+Executable:
+
+```text
+build\mingw-release\EagleGD.exe
+```
+
+### Deploy Qt DLLs (run outside Qt Creator)
 
 ```powershell
+C:\Qt\6.9.1\mingw_64\bin\windeployqt.exe .\build\mingw-release\EagleGD.exe
+```
+
+Keep a `tools/` folder next to the exe (or under `../../tools` from `build/mingw-release`) so whisper-server and Piper resolve.
+
+### Qt Creator
+
+Open `CMakeLists.txt`, kit **Desktop Qt 6.9.x MinGW 64-bit**, configure, build, run.
+
+## Ollama model
+
+Weights are **not** in this repo. They live under `%USERPROFILE%\.ollama\models\` after you pull/create models.
+
+Example profile (from `model/Modelfile.eagle-clm`):
+
+```powershell
+ollama pull qwen3.5:4b-q4_K_M
+ollama create eagle-clm -f model/Modelfile.eagle-clm
 ollama list
-ollama ps
 ```
 
-Do **not** run a second `ollama serve` if Ollama is already running (port `11434` will already be in use).
+Default config model name: `eagle-clm` (override in user config under the app data dir or a copied `eagle_config.json`).
 
-### 3. Qt 6 (required to build)
+## Speech tools (not in git)
 
-Install with [Qt Online Installer](https://www.qt.io/download-qt-installer):
+`.gitignore` excludes large binaries. After clone, install locally:
 
-- **Qt 6.9.1** → **MinGW 64-bit** (matches this README), or  
-- **Qt 6.9.3** → **MSVC 2022 64-bit**
+| Component | Typical path |
+|-----------|----------------|
+| whisper-server | `tools/whisper/Release/whisper-server.exe` (+ DLLs in same folder) |
+| Whisper model | `tools/whisper/models/ggml-small-q5_1.bin` or `ggml-base.bin` |
+| Piper | `tools/piper/piper/piper.exe` |
+| English voice | `tools/piper/voices/en_US-lessac-medium.onnx` + `.json` |
+| Hindi voice | per `resources/config/eagle_config.defaults.json` `tts.voice_hi` |
 
-Also install from the installer:
+Download hints: [whisper.cpp releases](https://github.com/ggml-org/whisper.cpp/releases), [Piper releases](https://github.com/rhasspy/piper/releases), [Piper voices on Hugging Face](https://huggingface.co/rhasspy/piper-voices).
 
-- Qt Creator (optional but convenient)
-- CMake and Ninja (under Qt Tools), or use system CMake/Ninja
-- MinGW 13.1 (if using the MinGW kit)
+The app supervises **whisper-server** on `stt.port` (default **8178**), not legacy `whisper-cli` per utterance.
 
-Typical paths used below:
+## Configuration
 
-- Qt: `C:\Qt\6.9.1\mingw_64`
-- MinGW: `C:\Qt\Tools\mingw1310_64`
-- CMake: `C:\Qt\Tools\CMake_64\bin`
-- Ninja: `C:\Qt\Tools\Ninja`
+Defaults: `resources/config/eagle_config.defaults.json`.  
+Runtime overrides: copy to your data directory (see `Paths::dataDir()` / Readiness panel) as documented in `docs/EAGLE_BUILD_SPEC.md`.
 
-### 4. whisper.cpp + Piper (required for Mic / Listen)
+**Do not commit:** `.env`, `key.json`, API keys, `logs/`, `tts_cache/`, `generated_speech/`. See `SECURITY.md`.
 
-After cloning the repo, place tools like this:
-
-```text
-tools/whisper/Release/whisper-cli.exe
-tools/whisper/models/ggml-base.bin
-tools/piper/piper/piper.exe          (+ DLLs / espeak-ng-data next to it)
-tools/piper/voices/en_US-lessac-medium.onnx
-tools/piper/voices/en_US-lessac-medium.onnx.json
-```
-
-**whisper.cpp (Windows x64 binary + model)**
-
-1. Download `whisper-bin-x64.zip` from  
-   https://github.com/ggml-org/whisper.cpp/releases  
-2. Extract so `whisper-cli.exe` is under `tools/whisper/Release/`.  
-3. Download model:
+## Tests
 
 ```powershell
-New-Item -ItemType Directory -Force -Path tools\whisper\models | Out-Null
-Invoke-WebRequest `
-  -Uri "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin" `
-  -OutFile "tools\whisper\models\ggml-base.bin"
+ctest --preset windows-mingw-release --output-on-failure
 ```
 
-**Piper (Windows binary + English voice)**
+Eleven unit test executables (prompt builder, Ollama backend mock, STT/VAD, curriculum, retriever, etc.).
 
-1. Download `piper_windows_amd64.zip` from  
-   https://github.com/rhasspy/piper/releases/tag/2023.11.14-2  
-2. Extract into `tools/piper/` so you get `tools/piper/piper/piper.exe`.  
-3. Download voice:
+## Documentation
 
-```powershell
-New-Item -ItemType Directory -Force -Path tools\piper\voices | Out-Null
-Invoke-WebRequest `
-  -Uri "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx" `
-  -OutFile "tools\piper\voices\en_US-lessac-medium.onnx"
-Invoke-WebRequest `
-  -Uri "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json" `
-  -OutFile "tools\piper\voices\en_US-lessac-medium.onnx.json"
-```
+- `docs/CHANGELOG.md` — milestone history  
+- `docs/DECISIONS.md` — architecture decisions  
+- `docs/EAGLE_BUILD_SPEC.md` — full product spec  
+- `docs/ARCHITECTURE.md` — high-level map  
 
-### 5. Windows permissions
+## Upload to GitHub
 
-- Allow **microphone** access for desktop apps:  
-  **Settings → Privacy & security → Microphone**
-- Speakers/headphones should appear in Windows sound settings (Piper uses the selected output device).
+Your repo is already a **local git** history (`master`, latest commits through **M4b**). There is **no `origin` remote** until you add one.
 
----
-
-## Build the `.exe` (Windows, MinGW Qt 6.9.1)
-
-From **PowerShell** in the project root:
-
-```powershell
-$env:PATH = "C:\Qt\Tools\mingw1310_64\bin;C:\Qt\6.9.1\mingw_64\bin;C:\Qt\Tools\CMake_64\bin;C:\Qt\Tools\Ninja"
-cd <path-to-this-repo>
-cmake -G Ninja -DCMAKE_PREFIX_PATH=C:/Qt/6.9.1/mingw_64 -B build
-cmake --build build
-```
-
-Output:
-
-```text
-build\OllamaChat.exe
-```
-
-### Build with Qt Creator
-
-1. Open `CMakeLists.txt`.  
-2. Choose kit **Desktop Qt 6.9.1 MinGW 64-bit** (or your MSVC kit).  
-3. Configure → Build → Run.
-
----
-
-## After the `.exe` is created
-
-### 1. Deploy Qt runtime next to the exe (required to run outside Qt Creator)
-
-```powershell
-C:\Qt\6.9.1\mingw_64\bin\windeployqt.exe .\build\OllamaChat.exe
-```
-
-This copies Qt DLLs and plugins (including **Multimedia**) beside `OllamaChat.exe`. Without this step, double-clicking the exe on another PC (or even this PC without Qt on PATH) often fails with missing DLL errors.
-
-### 2. Keep `tools/` reachable
-
-The app looks for whisper/Piper relative to the exe, for example:
-
-- `../tools/whisper/...` when running from `build/`
-- or `tools/...` next to the exe
-
-If you copy only `OllamaChat.exe` to another folder, also copy:
-
-- the `windeployqt` DLLs/plugins folder contents  
-- the `tools/` tree (whisper + piper)
-
-### 3. Start Ollama, then the app
-
-```powershell
-# Ollama should already be running after install
-ollama list
-.\build\OllamaChat.exe
-```
-
-### 4. First-run checklist in the UI
-
-1. Model dropdown: `ornith:9b` or `qwen3.5:4b`  
-2. Word limit as needed  
-3. Mic dropdown → pick input → **Mic** → speak → **Stop**  
-4. Speaker dropdown → pick output → keep **Listen** on to hear Piper  
-5. If devices are missing, click **↻** to refresh  
-
-### 5. Optional: zip a portable folder
-
-For sharing a built Windows build (not source):
-
-```text
-OllamaChat/
-  OllamaChat.exe
-  Qt DLLs + platforms/ + multimedia/ ...   (from windeployqt)
-  tools/
-    whisper/
-    piper/
-```
-
-Recipients still need **Ollama + models** installed separately.
-
----
-
-## Upload this project to GitHub
-
-### A. Create an empty repo on GitHub
+### 1. Create an empty GitHub repository
 
 1. Sign in at https://github.com  
 2. **New repository**  
-3. Name it (example: `ollama-chat-qt`)  
-4. Leave it **empty** (no README / no license if you already have local files)  
-5. Copy the repo URL, e.g. `https://github.com/<you>/<repo>.git`
+3. Name (example): `EagleGD` or `eagle-group-discussion`  
+4. Choose **Private** (recommended for school work) or **Public**  
+5. **Do not** add a README, license, or `.gitignore` (you already have them locally)  
+6. Copy the HTTPS URL, e.g. `https://github.com/<your-username>/<repo>.git`
 
-### B. Install Git for Windows (if `git` is not recognized)
-
-Download: https://git-scm.com/download/win  
-Open a **new** PowerShell after install and check:
+### 2. Review before push
 
 ```powershell
-git --version
+cd "C:\Users\softw\Past_Projects\Eagle Group Discussion"
+git status
+git log -3 --oneline
 ```
 
-### C. Do not upload secrets
+Confirm `git status` is clean and that you are **not** about to add:
 
-Before the first commit, confirm these are ignored / removed:
+- `tools/` binaries, `build/`, `.env`, keys, `New-discussion-eleven/`, personal folders listed in `.gitignore`
 
-- `.env`, API keys, `utility/key.json`  
-- `build/`  
-- Large `tools/` binaries (models, onnx, whisper Release zips)  
-- Optional: exclude `New-discussion-eleven/` if that is a separate private project  
-
-This repo’s `.gitignore` already covers common cases. If you keep `New-discussion-eleven/`, open it and **remove real API keys** before pushing.
-
-### D. First push from PowerShell
+If you changed README / SECURITY locally, commit first:
 
 ```powershell
-cd C:\Users\softw\Past_Projects\ollama
+git add README.md SECURITY.md LICENSE .gitignore
+git commit -m "Add GitHub-oriented README, security notes, and license."
+```
 
-git init
-git add .
-git status
-# Review carefully: no key.json, no .env, no huge .bin/.onnx if ignored correctly
+### 3. Add remote and push
 
-git commit -m "Add Qt Ollama Chat desktop client for Windows."
-
+```powershell
 git branch -M main
-git remote add origin https://github.com/<you>/<repo>.git
+git remote add origin https://github.com/<your-username>/<repo>.git
 git push -u origin main
 ```
 
-If GitHub asks you to sign in, use a **Personal Access Token** as the password (or GitHub CLI / Git Credential Manager).
+Use a **Personal Access Token** as the password if GitHub prompts (Settings → Developer settings → Personal access tokens), or sign in via **Git Credential Manager** / **GitHub Desktop**.
 
-### E. Easier alternative: GitHub Desktop
+### 4. Alternative: GitHub Desktop
 
 1. Install https://desktop.github.com  
-2. **File → Add Local Repository** → select this folder  
-3. Publish repository to your GitHub account  
+2. **File → Add local repository** → select this folder  
+3. **Publish repository** → choose name and visibility  
 
----
+### 5. After push
+
+- Add a short **description** on GitHub (“Qt 6 classroom assistant with Ollama + curriculum unit packs”).  
+- Optionally enable **Dependabot** / **branch protection** for collaboration.  
+- Do **not** put Ollama API keys in the repo; Ollama is local by default.
 
 ## Troubleshooting
 
-| Problem | What to try |
-|---------|-------------|
-| Missing DLL when starting exe | Run `windeployqt` again on `OllamaChat.exe` |
-| Chat stuck on “Generating…” | Model may be thinking/loading; wait, or click Stop; try New chat |
-| Mic / Listen fails | Confirm `tools/whisper` and `tools/piper` paths; allow mic privacy |
-| Cannot reach Ollama | Start Ollama app; open `http://127.0.0.1:11434` |
-| `ollama serve` bind error | Ollama is already running — that is OK |
-| Git not found | Install Git for Windows and reopen the terminal |
+| Issue | What to try |
+|-------|-------------|
+| CMake cannot find Qt | Set `CMAKE_PREFIX_PATH` to `...\Qt\6.9.x\mingw_64` |
+| Missing DLL at runtime | Run `windeployqt` on `EagleGD.exe` |
+| Ollama unreachable | Start Ollama; check `http://127.0.0.1:11434` |
+| STT / TTS not ready | Open Readiness panel; fix `tools/whisper` and `tools/piper` paths |
+| Warm-up / unit change issues | See `docs/DECISIONS.md` M4a aux queue notes |
 
-## License note
+## Third-party licenses
 
-Ollama, whisper.cpp, Piper, and model weights each have their own licenses. Check those projects before redistributing binaries or models.
+Ollama, whisper.cpp, Piper, Qt, and model weights have their own licenses. This repository’s license applies only to EagleGD source here; see `LICENSE`.
